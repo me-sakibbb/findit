@@ -1,0 +1,74 @@
+[00:00:02.043] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:02.388] Server  LOG      ✓ Ready in 1717ms
+[00:00:18.274] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:18.274] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:00:18.274] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.3.1","sv":"0.1.3","ts":1765012718918}
+[00:01:06.627] Server  LOG      ✓ Compiled in 165ms
+[00:01:32.272] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:01:32.272] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:01:32.273] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.3.1","sv":"0.1.3","ts":1765012792924}
+[00:02:07.056] Server  LOG      ✓ Compiled in 353ms
+[00:03:05.543] Server  LOG      ✓ Compiled in 253ms
+[00:03:05.854] Browser ERROR   ./components/navigation.tsx:190:1
+Parsing ecmascript source code failed
+  188 |     </nav>
+  189 |   )
+> 190 | }
+      | ^
+  191 |
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import trace:
+  Server Component:
+    ./components/navigation.tsx
+    ./app/(home)/layout.tsx
+[00:03:05.854] Browser ERROR   ./components/navigation.tsx
+Code generation for chunk item errored
+An error occurred while generating the chunk item [project]/components/navigation.tsx [app-ssr] (ecmascript)
+
+Caused by:
+- CJS module can't be async.
+
+Debug info:
+- An error occurred while generating the chunk item [project]/components/navigation.tsx [app-ssr] (ecmascript)
+- Execution of <ModuleChunkItem as EcmascriptChunkItem>::content_with_async_module_info failed
+- Execution of EcmascriptChunkItemContent::new failed
+- CJS module can't be async.
+
+Import trace:
+  Server Component:
+    ./components/navigation.tsx
+    ./app/(home)/layout.tsx
+[00:03:19.850] Browser ERROR   ./components/navigation.tsx:191:1
+Parsing ecmascript source code failed
+  189 |     </nav>
+  190 |   )
+> 191 | }
+      | ^
+  192 |
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import trace:
+  Server Component:
+    ./components/navigation.tsx
+    ./app/(home)/layout.tsx
+[00:03:19.850] Browser ERROR   ./components/navigation.tsx
+Code generation for chunk item errored
+An error occurred while generating the chunk item [project]/components/navigation.tsx [app-ssr] (ecmascript)
+
+Caused by:
+- CJS module can't be async.
+
+Debug info:
+- An error occurred while generating the chunk item [project]/components/navigation.tsx [app-ssr] (ecmascript)
+- Execution of <ModuleChunkItem as EcmascriptChunkItem>::content_with_async_module_info failed
+- Execution of EcmascriptChunkItemContent::new failed
+- CJS module can't be async.
+
+Import trace:
+  Server Component:
+    ./components/navigation.tsx
+    ./app/(home)/layout.tsx
+[00:03:35.637] Server  LOG      ✓ Compiled in 107ms
