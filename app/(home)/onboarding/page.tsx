@@ -79,7 +79,7 @@ export default function OnboardingPage() {
       })
 
       if (error) throw error
-      router.push("/dashboard")
+      router.push("/profile")
     } catch (error) {
       console.error("Error saving profile:", error)
     } finally {

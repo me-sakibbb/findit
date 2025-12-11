@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Plus, MessageSquare, LayoutDashboard, LogOut, User, Settings, Package } from "lucide-react"
+import { Search, Plus, MessageSquare, LogOut, User, Settings, Package } from "lucide-react"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -110,17 +110,6 @@ export function Navigation() {
             <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className={cn("hidden md:flex text-base", pathname === "/dashboard" && "bg-muted")}
-                >
-                  <Link href="/dashboard">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Link>
-                </Button>
                 <Button
                   variant="ghost"
                   size="sm"

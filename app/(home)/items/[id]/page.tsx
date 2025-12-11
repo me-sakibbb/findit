@@ -168,7 +168,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
 
                   {isOwner && (
                     <Button variant="outline" className="w-full bg-transparent" asChild>
-                      <Link href="/dashboard">View in Dashboard</Link>
+                      <Link href="/profile">View My Profile</Link>
                     </Button>
                   )}
                 </CardContent>

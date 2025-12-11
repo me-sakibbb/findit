@@ -249,7 +249,7 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
         description: `Your ${type} item has been posted successfully.`,
       })
 
-      router.push("/dashboard")
+      router.push("/profile")
     } catch (error) {
       console.error("[v0] Submit error:", error)
       toast({
