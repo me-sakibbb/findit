@@ -51,7 +51,7 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `receiver_id=eq.${userId}`,
+          filter: `recipient_id=eq.${userId}`,
         },
         () => {
           loadConversations()
@@ -70,9 +70,9 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
       const { data: messages, error } = await supabase
         .from("messages")
         .select(
-          "*, sender:profiles!messages_sender_id_fkey(*), receiver:profiles!messages_receiver_id_fkey(*), item:items(*)",
+          "*, sender:profiles!messages_sender_id_fkey1(*), receiver:profiles!messages_recipient_id_fkey1(*), item:items(*)",
         )
-        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+        .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
         .order("created_at", { ascending: false })
 
       if (error) {
@@ -86,27 +86,45 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
       const conversationMap = new Map<string, any>()
 
       messages?.forEach((msg: any) => {
-        const otherUserId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id
-        const key = `${otherUserId}-${msg.item_id || "general"}`
+        const otherUserId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id
+        const otherUser = msg.sender_id === userId ? msg.receiver : msg.sender
+        
+        // Skip if we can't determine the other user
+        if (!otherUser || !otherUser.id) {
+          console.warn("Skipping message with missing user data:", msg.id)
+          return
+        }
+
+        const itemKey = msg.item_id || "general"
+        const key = `${otherUserId}-${itemKey}`
 
         if (!conversationMap.has(key)) {
-          const otherUser = msg.sender_id === userId ? msg.receiver : msg.sender
           conversationMap.set(key, {
             id: key,
             other_user: otherUser,
             last_message: msg,
-            unread_count: msg.receiver_id === userId && !msg.read ? 1 : 0,
+            unread_count: msg.recipient_id === userId && !msg.is_read ? 1 : 0,
             item: msg.item,
           })
         } else {
           const conv = conversationMap.get(key)
-          if (msg.receiver_id === userId && !msg.read) {
+          // Update last message if this one is newer
+          if (new Date(msg.created_at) > new Date(conv.last_message.created_at)) {
+            conv.last_message = msg
+          }
+          // Count unread
+          if (msg.recipient_id === userId && !msg.is_read) {
             conv.unread_count++
           }
         }
       })
 
-      setConversations(Array.from(conversationMap.values()))
+      // Convert to array and sort by most recent message
+      const conversationsArray = Array.from(conversationMap.values()).sort((a, b) => {
+        return new Date(b.last_message.created_at).getTime() - new Date(a.last_message.created_at).getTime()
+      })
+
+      setConversations(conversationsArray)
     } catch (error) {
       console.error("Error loading conversations:", error instanceof Error ? error.message : String(error))
       setConversations([])
