@@ -48,7 +48,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-svh flex flex-col">
-      <Navigation />
       <main className="flex-1">
         <div className="container py-8">
           <div className="flex items-center justify-between mb-8">

@@ -57,37 +57,6 @@ export function LeafletMapsPicker({ value, onSelect }: LeafletMapsPickerProps) {
   const [isSearching, setIsSearching] = useState(false)
   const [mapCenter, setMapCenter] = useState<[number, number]>([23.8103, 90.4125]) // Default to Dhaka
   const [mapZoom, setMapZoom] = useState(12)
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
-
-  // Get user's current location on component mount
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLat = position.coords.latitude
-          const userLng = position.coords.longitude
-          setUserLocation([userLat, userLng])
-          // Set map center to user's location if no location is selected
-          if (!selectedLocation) {
-            setMapCenter([userLat, userLng])
-            setMapZoom(13)
-          }
-          console.log("[Leaflet] User location obtained:", userLat, userLng)
-        },
-        (error) => {
-          console.warn("[Leaflet] Could not get user location:", error.message)
-          // Fall back to default location (Dhaka)
-        },
-        {
-          enableHighAccuracy: false,
-          timeout: 5000,
-          maximumAge: 0
-        }
-      )
-    } else {
-      console.warn("[Leaflet] Geolocation is not supported by this browser")
-    }
-  }, [])
 
   // Update map center when selectedLocation changes
   useEffect(() => {
@@ -161,12 +130,9 @@ export function LeafletMapsPicker({ value, onSelect }: LeafletMapsPickerProps) {
 
     setIsSearching(true)
     try {
-      // Use user's location for proximity if available, otherwise use map center
-      const proximityLat = userLocation ? userLocation[0] : mapCenter[0]
-      const proximityLng = userLocation ? userLocation[1] : mapCenter[1]
-      
+      // Remove country restriction to allow worldwide search
       const response = await fetch(
-        `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${apiKey}&limit=5&proximity=${proximityLat},${proximityLng}`
+        `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${apiKey}&limit=5`
       )
       const data = await response.json()
       
@@ -247,15 +213,12 @@ export function LeafletMapsPicker({ value, onSelect }: LeafletMapsPickerProps) {
             {selectedLocation ? selectedLocation.name : "Select location from map..."}
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-3xl h-[600px] flex flex-col" aria-describedby="location-dialog-description">
+        <DialogContent className="max-w-3xl h-[600px] flex flex-col">
           <DialogHeader>
             <DialogTitle>Select Location</DialogTitle>
-            <p id="location-dialog-description" className="sr-only">
-              Search for a location or click on the map to select a location
-            </p>
           </DialogHeader>
           <div className="flex-1 flex flex-col gap-4">
-            <div className="relative" style={{ zIndex: 1000 }}>
+            <div className="relative">
               <Input
                 type="text"
                 placeholder={process.env.NEXT_PUBLIC_OPENCAGE_API_KEY ? "Search for a location..." : "Search disabled - Click on map to select location"}
@@ -268,12 +231,12 @@ export function LeafletMapsPicker({ value, onSelect }: LeafletMapsPickerProps) {
                 <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
               )}
               {searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-lg max-h-48 overflow-y-auto" style={{ zIndex: 1001 }}>
+                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto z-50">
                   {searchResults.map((result, index) => (
                     <button
                       key={index}
                       type="button"
-                      className={`w-full text-left px-3 py-2 text-sm border-b last:border-b-0 ${result.disabled ? 'text-muted-foreground cursor-default bg-muted/50' : 'hover:bg-accent hover:text-accent-foreground'}`}
+                      className={`w-full text-left px-3 py-2 text-sm ${result.disabled ? 'text-muted-foreground cursor-default' : 'hover:bg-muted'}`}
                       onClick={() => handleSearchResultClick(result)}
                       disabled={result.disabled}
                     >
@@ -284,7 +247,7 @@ export function LeafletMapsPicker({ value, onSelect }: LeafletMapsPickerProps) {
               )}
             </div>
             
-            <div className="flex-1 rounded-lg border overflow-hidden" style={{ zIndex: 1 }}>
+            <div className="flex-1 rounded-lg border overflow-hidden">
               <MapContainer
                 center={mapCenter}
                 zoom={mapZoom}

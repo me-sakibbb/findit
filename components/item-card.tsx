@@ -39,7 +39,7 @@ export function ItemCard({ item }: ItemCardProps) {
 
   return (
     <Link href={`/items/${item.id}`} className="group">
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-border/50 h-full flex flex-col p-0 gap-0">
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-border/50 h-full flex flex-col">
         <div className="relative aspect-4/3 overflow-hidden bg-muted">
           <img
             src={imageUrl || "/placeholder.svg"}

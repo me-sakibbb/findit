@@ -133,7 +133,7 @@ export function Navigation() {
                   </Link>
                 </Button>
                 <Button size="sm" asChild className="text-base">
-                  <Link href="/post">
+                  <Link href="/post/lost">
                     <Plus className="mr-2 h-5 w-5" />
                     <span className="hidden sm:inline">Post Item</span>
                   </Link>
