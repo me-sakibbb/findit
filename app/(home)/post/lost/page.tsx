@@ -13,12 +13,8 @@ export default async function PostLostPage() {
   }
 
   return (
-    <div className="min-h-svh flex flex-col">
-      <main className="flex-1">
-        <div className="container mx-auto px-4 max-w-3xl py-8">
-          <ItemPostForm type="lost" />
-        </div>
-      </main>
+    <div className="container max-w-3xl py-8">
+      <ItemPostForm type="lost" />
     </div>
   )
 }

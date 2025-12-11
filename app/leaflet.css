@@ -1,0 +1,8 @@
+/* Leaflet CSS - Required for map functionality */
+@import 'leaflet/dist/leaflet.css';
+
+/* Fix for default marker icons in Next.js */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}

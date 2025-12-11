@@ -65,7 +65,10 @@ export function Navigation() {
           </Link>
 
           <div className="flex items-center gap-2 md:gap-3 ml-auto">
-            <form onSubmit={handleSearch} className="group relative hidden md:block">
+            <form 
+              onSubmit={handleSearch} 
+              className="group relative hidden md:block"
+            >
               <div className="relative">
                 <Button
                   type="button"
@@ -75,7 +78,9 @@ export function Navigation() {
                 >
                   <Search className="h-4 w-4" />
                 </Button>
-                <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-200 w-0 group-hover:w-64 group-focus-within:w-64 overflow-hidden">
+                <div 
+                  className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-200 w-0 group-hover:w-64 group-focus-within:w-64 overflow-hidden"
+                >
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <Input
@@ -94,10 +99,10 @@ export function Navigation() {
               variant="ghost"
               size="sm"
               asChild
-              className={cn("hidden sm:flex", pathname === "/items" && "bg-muted")}
+              className={cn("hidden sm:flex text-base", pathname === "/items" && "bg-muted")}
             >
               <Link href="/items">
-                <Package className="mr-2 h-4 w-4" />
+                <Package className="mr-2 h-5 w-5" />
                 Items
               </Link>
             </Button>
@@ -109,10 +114,10 @@ export function Navigation() {
                   variant="ghost"
                   size="sm"
                   asChild
-                  className={cn("hidden md:flex", pathname === "/dashboard" && "bg-muted")}
+                  className={cn("hidden md:flex text-base", pathname === "/dashboard" && "bg-muted")}
                 >
                   <Link href="/dashboard">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <LayoutDashboard className="mr-2 h-5 w-5" />
                     Dashboard
                   </Link>
                 </Button>
@@ -120,16 +125,16 @@ export function Navigation() {
                   variant="ghost"
                   size="sm"
                   asChild
-                  className={cn("hidden md:flex", pathname === "/messages" && "bg-muted")}
+                  className={cn("hidden md:flex text-base", pathname === "/messages" && "bg-muted")}
                 >
                   <Link href="/messages">
-                    <MessageSquare className="mr-2 h-4 w-4" />
+                    <MessageSquare className="mr-2 h-5 w-5" />
                     Messages
                   </Link>
                 </Button>
-                <Button size="sm" asChild>
-                  <Link href="/post/lost">
-                    <Plus className="mr-2 h-4 w-4" />
+                <Button size="sm" asChild className="text-base">
+                  <Link href="/post">
+                    <Plus className="mr-2 h-5 w-5" />
                     <span className="hidden sm:inline">Post Item</span>
                   </Link>
                 </Button>
@@ -179,7 +184,7 @@ export function Navigation() {
                 </DropdownMenu>
               </>
             ) : (
-              <Button size="sm" asChild>
+              <Button size="sm" asChild className="text-base">
                 <Link href="/auth/login">Sign In</Link>
               </Button>
             )}

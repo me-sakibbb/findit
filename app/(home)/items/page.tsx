@@ -1,110 +1,29 @@
 import { createServerClient } from "@/lib/supabase/server"
 import { SearchFilters } from "@/components/search-filters"
 import { ItemCard } from "@/components/item-card"
-
 import { Package } from "lucide-react"
 
-interface ItemsPageProps {
-  searchParams: Promise<{
-    type?: string
-    category?: string
-    q?: string
-    locationName?: string
-    lat?: string
-    lng?: string
-    radius?: string
-    userId?: string
-    dateFrom?: string
-    dateTo?: string
-  }>
-}
-
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371 // Earth's radius in kilometers
-  const dLat = ((lat2 - lat1) * Math.PI) / 180
-  const dLon = ((lon2 - lon1) * Math.PI) / 180
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return R * c
-}
-
-export default async function ItemsPage({ searchParams }: ItemsPageProps) {
-  const params = await searchParams
+export default async function ItemsPage() {
   const supabase = await createServerClient()
 
-  let query = supabase
+  const { data: items, error } = await supabase
     .from("items")
-    .select("*")
+    .select("*, profiles(id, full_name, avatar_url)")
     .eq("is_active", true)
     .order("created_at", { ascending: false })
-
-  // Apply filters
-  if (params.type && params.type !== "all") {
-    query = query.eq("status", params.type)
-  }
-  if (params.category && params.category !== "all") {
-    query = query.eq("category", params.category)
-  }
-  if (params.q) {
-    query = query.or(`title.ilike.%${params.q}%,description.ilike.%${params.q}%`)
-  }
-  if (params.userId) {
-    query = query.eq("user_id", params.userId)
-  }
-  if (params.dateFrom) {
-    query = query.gte("created_at", params.dateFrom)
-  }
-  if (params.dateTo) {
-    query = query.lte("created_at", params.dateTo)
-  }
-
-  const { data: items, error } = await query
+    .limit(50)
 
   if (error) {
-    console.error("[v0] Error fetching items:", error)
-  }
-
-  // Fetch profiles for all items
-  let itemsWithProfiles = items || []
-  if (items && items.length > 0) {
-    const userIds = [...new Set(items.map((item) => item.user_id))]
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url")
-      .in("id", userIds)
-
-    // Attach profile data to each item
-    itemsWithProfiles = items.map((item) => ({
-      ...item,
-      profiles: profiles?.find((p) => p.id === item.user_id) || null,
-    }))
-  }
-
-  let filteredItems = itemsWithProfiles
-
-  if (params.lat && params.lng && params.radius && filteredItems.length > 0) {
-    const searchLat = Number.parseFloat(params.lat)
-    const searchLng = Number.parseFloat(params.lng)
-    const radiusKm = Number.parseFloat(params.radius)
-
-    filteredItems = filteredItems.filter((item) => {
-      if (!item.latitude || !item.longitude) return false
-
-      const distance = calculateDistance(searchLat, searchLng, item.latitude, item.longitude)
-      return distance <= radiusKm
-    })
+    console.error("[Items] Error fetching items:", error)
   }
 
   return (
     <div className="min-h-svh flex flex-col bg-background">
-      
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
           <div className="mb-8 md:mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">Search Lost & Found Items</h1>
-            <p className="text-lg text-muted-foreground">Browse through reported lost and found items in your area</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">All Items</h1>
+            <p className="text-lg text-muted-foreground">Browse through all reported lost and found items</p>
           </div>
 
           <div className="grid lg:grid-cols-[320px_1fr] gap-8">
@@ -113,21 +32,15 @@ export default async function ItemsPage({ searchParams }: ItemsPageProps) {
             </aside>
 
             <div>
-              {filteredItems && filteredItems.length > 0 ? (
+              {items && items.length > 0 ? (
                 <>
                   <div className="mb-6 flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">
-                      Showing <span className="font-semibold text-foreground">{filteredItems.length}</span> item(s)
-                      {params.locationName && (
-                        <span>
-                          {" "}
-                          within {params.radius} km of {params.locationName}
-                        </span>
-                      )}
+                      Showing <span className="font-semibold text-foreground">{items.length}</span> item(s)
                     </p>
                   </div>
                   <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredItems.map((item) => (
+                    {items.map((item) => (
                       <ItemCard key={item.id} item={item} />
                     ))}
                   </div>
@@ -139,7 +52,7 @@ export default async function ItemsPage({ searchParams }: ItemsPageProps) {
                   </div>
                   <h3 className="text-xl font-semibold mb-2">No items found</h3>
                   <p className="text-muted-foreground max-w-md">
-                    Try adjusting your filters or search terms to find what you're looking for
+                    No items have been posted yet. Be the first to post a lost or found item!
                   </p>
                 </div>
               )}

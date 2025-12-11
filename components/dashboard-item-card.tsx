@@ -88,11 +88,11 @@ export function DashboardItemCard({ item }: DashboardItemCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
       <CardHeader className="p-0">
-        <div className="relative aspect-video w-full">
+        <div className="relative aspect-video">
           <img
             src={imageUrl || "/placeholder.svg"}
             alt={item.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-t-lg"
           />
           <Badge className="absolute top-2 left-2" variant={item.type === "lost" ? "destructive" : "default"}>
             {item.type === "lost" ? "Lost" : "Found"}
@@ -104,7 +104,7 @@ export function DashboardItemCard({ item }: DashboardItemCardProps) {
           )}
         </div>
       </CardHeader>
-      <CardContent className="flex-1 px-6 py-4">
+      <CardContent className="flex-1 p-4">
         <h3 className="font-semibold text-lg mb-2 line-clamp-1">{item.title}</h3>
         <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{item.description}</p>
         <div className="space-y-1">
@@ -124,7 +124,7 @@ export function DashboardItemCard({ item }: DashboardItemCardProps) {
           </div>
         </div>
       </CardContent>
-      <CardFooter className="px-6 py-4 flex gap-2">
+      <CardFooter className="p-4 pt-0 flex gap-2">
         <Button variant="outline" size="sm" className="flex-1 bg-transparent" asChild>
           <Link href={`/items/${item.id}`}>View Details</Link>
         </Button>

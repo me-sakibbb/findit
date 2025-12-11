@@ -14,6 +14,18 @@ import { createBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { categorizeItem } from "@/lib/actions/ai"
+import dynamic from "next/dynamic"
+
+// Dynamically import LeafletMapsPicker with no SSR to avoid "window is not defined" error
+const LeafletMapsPicker = dynamic(() => import("@/components/leaflet-maps-picker").then((mod) => mod.LeafletMapsPicker), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-12 flex items-center justify-center border rounded-md bg-muted">
+      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+      <span className="text-sm text-muted-foreground">Loading map...</span>
+    </div>
+  ),
+})
 
 const CATEGORIES = [
   "Electronics",
@@ -36,9 +48,7 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
-  const [location, setLocation] = useState("")
-  const [city, setCity] = useState("")
-  const [state, setState] = useState("")
+  const [selectedLocation, setSelectedLocation] = useState<{ name: string; lat: number; lng: number } | null>(null)
   const [date, setDate] = useState("")
   const [images, setImages] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
@@ -59,18 +69,29 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
 
     setCategorizing(true)
     try {
-      const { categorizeItem } = await import("@/lib/supabase/client-utils")
+      console.log("[Form] Calling AI categorization...")
       const result = await categorizeItem(title, description)
-      setCategory(result.category)
+      console.log("[Form] AI result:", result)
+      
+      if (result) {
+        setCategory(result.category)
 
-      toast({
-        title: "Category suggested!",
-        description: `AI suggests: ${result.category} (${Math.round(result.confidence * 100)}% confident)`,
-      })
+        toast({
+          title: "Category suggested!",
+          description: `AI suggests: ${result.category} (${Math.round(result.confidence * 100)}% confident)`,
+        })
+      } else {
+        toast({
+          title: "AI Suggest unavailable",
+          description: "Add GOOGLE_GENERATIVE_AI_API_KEY to .env.local (free at aistudio.google.com)",
+          variant: "destructive",
+        })
+      }
     } catch (error) {
+      console.error("[Form] AI Suggest Error:", error)
       toast({
         title: "Categorization failed",
-        description: "Failed to auto-categorize. Please select manually.",
+        description: "An error occurred. Check the console for details.",
         variant: "destructive",
       })
     } finally {
@@ -86,19 +107,80 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
     const uploadedUrls: string[] = []
 
     try {
-      const { uploadFile } = await import("@/lib/supabase/client-utils")
-      
-      for (const file of Array.from(files)) {
-        const result = await uploadFile(file)
-        uploadedUrls.push(result.url)
+      const supabase = createBrowserClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        toast({
+          title: "Not authenticated",
+          description: "Please log in to upload images",
+          variant: "destructive",
+        })
+        setUploading(false)
+        return
       }
 
-      setImages([...images, ...uploadedUrls])
-      toast({
-        title: "Images uploaded",
-        description: `${uploadedUrls.length} image(s) uploaded successfully`,
-      })
+      for (const file of Array.from(files)) {
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+          toast({
+            title: "Invalid file type",
+            description: `${file.name} is not an image`,
+            variant: "destructive",
+          })
+          continue
+        }
+
+        // Validate file size (max 5MB)
+        const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+        if (file.size > MAX_FILE_SIZE) {
+          toast({
+            title: "File too large",
+            description: `${file.name} exceeds 5MB limit`,
+            variant: "destructive",
+          })
+          continue
+        }
+
+        // Generate unique filename
+        const fileExt = file.name.split(".").pop()
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+
+        // Upload to Supabase Storage
+        const { data, error } = await supabase.storage.from("item-images").upload(fileName, file, {
+          contentType: file.type,
+          upsert: false,
+        })
+
+        if (error) {
+          console.error("[Upload] Error:", error)
+          toast({
+            title: "Upload failed",
+            description: error.message,
+            variant: "destructive",
+          })
+          continue
+        }
+
+        // Get public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("item-images").getPublicUrl(data.path)
+
+        uploadedUrls.push(publicUrl)
+      }
+
+      if (uploadedUrls.length > 0) {
+        setImages([...images, ...uploadedUrls])
+        toast({
+          title: "Images uploaded",
+          description: `${uploadedUrls.length} image(s) uploaded successfully`,
+        })
+      }
     } catch (error) {
+      console.error("[Upload] Error:", error)
       toast({
         title: "Upload failed",
         description: "Failed to upload images. Please try again.",
@@ -132,6 +214,16 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
         return
       }
 
+      if (!selectedLocation) {
+        toast({
+          title: "Location required",
+          description: "Please select a location on the map",
+          variant: "destructive",
+        })
+        setSubmitting(false)
+        return
+      }
+
       const { data: newItem, error } = await supabase
         .from("items")
         .insert({
@@ -140,9 +232,9 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
           title,
           description,
           category,
-          location,
-          city,
-          state,
+          location: selectedLocation.name,
+          latitude: selectedLocation.lat,
+          longitude: selectedLocation.lng,
           date,
           image_url: images[0] || null,
           is_active: true,
@@ -239,39 +331,13 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location">General Location *</Label>
-            <Input
-              id="location"
-              placeholder="e.g., Central Park, Near 5th Avenue"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">City *</Label>
-              <Input
-                id="city"
-                placeholder="e.g., New York"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="state">State *</Label>
-              <Input
-                id="state"
-                placeholder="e.g., NY"
-                value={state}
-                onChange={(e) => setState(e.target.value.toUpperCase())}
-                maxLength={2}
-                required
-              />
-            </div>
+            <Label htmlFor="location">Location *</Label>
+            <LeafletMapsPicker value={selectedLocation} onSelect={setSelectedLocation} />
+            {!selectedLocation && (
+              <p className="text-sm text-muted-foreground">
+                Click the button above to select a location on the map or search for a place
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

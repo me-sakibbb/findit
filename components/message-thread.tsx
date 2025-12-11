@@ -14,7 +14,7 @@ interface Message {
   id: string
   content: string
   sender_id: string
-  recipient_id: string
+  receiver_id: string
   created_at: string
   sender?: {
     full_name: string
@@ -69,7 +69,7 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
         .from("messages")
         .select("*, sender:profiles!messages_sender_id_fkey(*)")
         .or(
-          `and(sender_id.eq.${userId},recipient_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},recipient_id.eq.${userId})`,
+          `and(sender_id.eq.${userId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${userId})`,
         )
         .order("created_at", { ascending: true })
 
@@ -78,7 +78,7 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
       setMessages(msgs || [])
 
       // Mark messages as read
-      await supabase.from("messages").update({ read: true }).eq("recipient_id", userId).eq("sender_id", otherUserId)
+      await supabase.from("messages").update({ read: true }).eq("receiver_id", userId).eq("sender_id", otherUserId)
 
       // Load recipient info
       const { data: recipientData } = await supabase.from("profiles").select("*").eq("id", otherUserId).single()
@@ -157,7 +157,7 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
     try {
       const { error } = await supabase.from("messages").insert({
         sender_id: userId,
-        recipient_id: recipientId,
+        receiver_id: recipientId,
         item_id: itemId,
         content: newMessage.trim(),
       })

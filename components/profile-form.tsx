@@ -48,9 +48,18 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 
     setUploading(true)
     try {
-      const { uploadFile } = await import("@/lib/supabase/client-utils")
-      const result = await uploadFile(file)
-      setAvatarUrl(result.url)
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) throw new Error("Upload failed")
+
+      const data = await response.json()
+      setAvatarUrl(data.url)
 
       toast({
         title: "Avatar uploaded",

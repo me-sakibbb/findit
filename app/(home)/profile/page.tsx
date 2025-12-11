@@ -20,7 +20,7 @@ export default async function ProfilePage() {
     <div className="min-h-svh flex flex-col">
       
       <main className="flex-1">
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="container py-8 max-w-3xl">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Profile Settings</h1>
             <p className="text-muted-foreground">Manage your account information and preferences</p>

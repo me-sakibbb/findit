@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { createServerClient } from "@/lib/supabase/server"
+import { Navigation } from "@/components/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -47,8 +48,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-svh flex flex-col">
+      <Navigation />
       <main className="flex-1">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container py-8">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold mb-2">My Dashboard</h1>

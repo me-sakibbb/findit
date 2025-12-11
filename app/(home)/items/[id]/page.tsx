@@ -1,5 +1,6 @@
 import { createServerClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
+import { Navigation } from "@/components/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -42,8 +43,9 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
 
   return (
     <div className="min-h-svh flex flex-col">
+      <Navigation />
       <main className="flex-1">
-        <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="container py-8 max-w-5xl">
           <div className="grid lg:grid-cols-[1fr_400px] gap-8">
             <div className="space-y-6">
               {/* Images */}

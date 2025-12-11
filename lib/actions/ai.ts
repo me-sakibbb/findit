@@ -2,28 +2,73 @@
 
 import { createServerClient } from "@/lib/supabase/server"
 import { generateText } from "ai"
+import { google } from "@ai-sdk/google"
 
 export async function categorizeItem(title: string, description: string) {
   try {
-    const { text } = await generateText({
-      model: "openai/gpt-4o-mini",
-      prompt: `Based on this lost/found item, suggest the most appropriate category. Only respond with ONE of these exact categories: Electronics, Clothing, Accessories, Documents, Keys, Pets, Other.
-      
+    // Check if Google AI API key is configured
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      console.error("[AI] Google AI API key not configured in environment variables")
+      return null
+    }
+
+    console.log("[AI] Starting categorization with Gemini...")
+
+    let text;
+    try {
+      // Try with the latest stable flash model (v2.0)
+      const result = await generateText({
+        model: google("models/gemini-2.0-flash"),
+        prompt: `Based on this lost/found item, suggest the most appropriate category. Only respond with ONE of these exact categories: Electronics, Clothing, Accessories, Documents, Keys, Bags, Books, Jewelry, Sports Equipment, Other.
+        
 Title: ${title}
 Description: ${description}
 
 Category:`,
-    })
+        temperature: 0.3,
+      })
+      text = result.text;
+    } catch (error: any) {
+      console.warn("[AI] gemini-2.0-flash failed, trying gemini-flash-latest fallback:", error.message);
+      // Fallback to latest flash alias
+      const result = await generateText({
+        model: google("models/gemini-flash-latest"),
+        prompt: `Based on this lost/found item, suggest the most appropriate category. Only respond with ONE of these exact categories: Electronics, Clothing, Accessories, Documents, Keys, Bags, Books, Jewelry, Sports Equipment, Other.
+        
+Title: ${title}
+Description: ${description}
 
+Category:`,
+        temperature: 0.3,
+      })
+      text = result.text;
+    }
+
+    console.log("[AI] Raw response:", text)
     const category = text.trim()
-    const validCategories = ["Electronics", "Clothing", "Accessories", "Documents", "Keys", "Pets", "Other"]
+    const validCategories = [
+      "Electronics",
+      "Clothing",
+      "Accessories",
+      "Documents",
+      "Keys",
+      "Bags",
+      "Books",
+      "Jewelry",
+      "Sports Equipment",
+      "Other",
+    ]
+
+    const finalCategory = validCategories.includes(category) ? category : "Other"
+    console.log("[AI] Final category:", finalCategory)
 
     return {
-      category: validCategories.includes(category) ? category : "Other",
+      category: finalCategory,
       confidence: 0.85,
     }
-  } catch (error) {
-    console.error("Categorization error:", error)
+  } catch (error: any) {
+    console.error("[AI] Categorization error:", error)
+    console.error("[AI] Error message:", error?.message)
     return null
   }
 }

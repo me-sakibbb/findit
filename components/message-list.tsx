@@ -51,7 +51,7 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `recipient_id=eq.${userId}`,
+          filter: `receiver_id=eq.${userId}`,
         },
         () => {
           loadConversations()
@@ -70,9 +70,9 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
       const { data: messages, error } = await supabase
         .from("messages")
         .select(
-          "*, sender:profiles!messages_sender_id_fkey(*), receiver:profiles!messages_recipient_id_fkey(*), item:items(*)",
+          "*, sender:profiles!messages_sender_id_fkey(*), receiver:profiles!messages_receiver_id_fkey(*), item:items(*)",
         )
-        .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order("created_at", { ascending: false })
 
       if (error) throw error
@@ -81,7 +81,7 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
       const conversationMap = new Map<string, any>()
 
       messages?.forEach((msg: any) => {
-        const otherUserId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id
+        const otherUserId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id
         const key = `${otherUserId}-${msg.item_id || "general"}`
 
         if (!conversationMap.has(key)) {
@@ -90,12 +90,12 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
             id: key,
             other_user: otherUser,
             last_message: msg,
-            unread_count: msg.recipient_id === userId && !msg.read ? 1 : 0,
+            unread_count: msg.receiver_id === userId && !msg.read ? 1 : 0,
             item: msg.item,
           })
         } else {
           const conv = conversationMap.get(key)
-          if (msg.recipient_id === userId && !msg.read) {
+          if (msg.receiver_id === userId && !msg.read) {
             conv.unread_count++
           }
         }
@@ -103,11 +103,7 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
 
       setConversations(Array.from(conversationMap.values()))
     } catch (error) {
-      console.error("Error loading conversations:", {
-        message: error instanceof Error ? error.message : "Unknown error",
-        details: error,
-        userId,
-      })
+      console.error("Error loading conversations:", error)
     } finally {
       setLoading(false)
     }
