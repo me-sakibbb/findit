@@ -39,7 +39,7 @@ export function ItemCard({ item }: ItemCardProps) {
 
   return (
     <Link href={`/items/${item.id}`} className="group">
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-border/50 h-full flex flex-col">
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border h-full flex flex-col">
         <div className="relative aspect-4/3 overflow-hidden bg-muted">
           <img
             src={imageUrl || "/placeholder.svg"}
@@ -53,11 +53,13 @@ export function ItemCard({ item }: ItemCardProps) {
             {item.status === "lost" ? "Lost" : "Found"}
           </Badge>
         </div>
-        <CardContent className="flex-1 p-5 pt-5">
+        <CardContent className="flex-1 p-5">
           <h3 className="font-semibold text-lg mb-2 line-clamp-1 group-hover:text-primary transition-colors">
             {item.title}
           </h3>
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{item.description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+            {item.description}
+          </p>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 shrink-0" />
@@ -75,8 +77,8 @@ export function ItemCard({ item }: ItemCardProps) {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="p-5 pt-3 border-t bg-muted/30">
-          <div className="flex items-center gap-3">
+        <CardFooter className="p-5 pt-0 border-t bg-muted/30">
+          <div className="flex items-center gap-3 w-full pt-3">
             <Avatar className="h-8 w-8">
               <AvatarImage src={userAvatar || undefined} />
               <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>

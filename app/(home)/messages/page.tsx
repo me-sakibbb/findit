@@ -25,12 +25,11 @@ export default async function MessagesPage({ searchParams }: MessagesPageProps) 
   const params = await searchParams
 
   return (
-    <div className="min-h-svh flex flex-col">
-      
+    <div className="min-h-svh flex flex-col bg-background">
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Messages</h1>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Messages</h1>
             <p className="text-muted-foreground">Connect with people about lost and found items</p>
           </div>
 

@@ -24,6 +24,7 @@ interface PotentialMatchCardProps {
       date_occurred: string
       images: string[]
       user_id: string
+      type: string
       profiles?: {
         full_name: string
         avatar_url?: string
@@ -45,17 +46,17 @@ export function PotentialMatchCard({ match }: PotentialMatchCardProps) {
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex items-start gap-6">
+        <div className="flex flex-col md:flex-row items-start gap-6">
           <img
             src={imageUrl || "/placeholder.svg"}
             alt={match.matched_item.title}
-            className="w-48 h-32 object-cover rounded-lg flex-shrink-0"
+            className="w-full md:w-48 h-40 md:h-32 object-cover rounded-lg shrink-0"
           />
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4 mb-3">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
+          <div className="flex-1 min-w-0 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
                   <Badge variant="secondary">
                     <Sparkles className="mr-1 h-3 w-3" />
                     {confidencePercent}% Match
@@ -71,15 +72,15 @@ export function PotentialMatchCard({ match }: PotentialMatchCardProps) {
               </div>
             </div>
 
-            <p className="text-sm mb-4">{match.matched_item.description}</p>
+            <p className="text-sm mb-4 leading-relaxed">{match.matched_item.description}</p>
 
             <div className="grid sm:grid-cols-2 gap-2 mb-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-4 w-4 shrink-0" />
                 <span className="line-clamp-1">{match.matched_item.location}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-4 w-4 shrink-0" />
                 <span>
                   {new Date(match.matched_item.date_occurred).toLocaleDateString("en-US", {
                     month: "short",
@@ -90,28 +91,28 @@ export function PotentialMatchCard({ match }: PotentialMatchCardProps) {
               </div>
             </div>
 
-            <div className="bg-muted/50 rounded-lg p-3 mb-4">
-              <p className="text-sm">
+            <div className="bg-muted/50 rounded-lg p-4 mb-4">
+              <p className="text-sm leading-relaxed">
                 <span className="font-medium">AI Analysis:</span> {match.reasoning}
               </p>
             </div>
 
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={match.matched_item.profiles?.avatar_url || "/placeholder.svg"} />
-                  <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-muted-foreground">
                   {match.matched_item.profiles?.full_name || "Anonymous"}
                 </span>
               </div>
 
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" asChild>
+              <div className="flex gap-3 w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-none" asChild>
                   <Link href={`/items/${match.matched_item.id}`}>View Details</Link>
                 </Button>
-                <Button size="sm" asChild>
+                <Button size="sm" className="flex-1 sm:flex-none" asChild>
                   <Link href={`/messages?item=${match.matched_item.id}&user=${match.matched_item.user_id}`}>
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Contact

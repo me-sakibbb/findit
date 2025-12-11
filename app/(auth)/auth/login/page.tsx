@@ -31,19 +31,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+    <div className="flex min-h-svh w-full items-center justify-center p-4 md:p-6 bg-background">
       <div className="w-full max-w-sm">
         <Card>
-          <CardHeader>
+          <CardHeader className="text-center">
             <CardTitle className="text-2xl">Sign in to FindIt</CardTitle>
             <CardDescription>Use your Google account to continue</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-6">
-              {error && <p className="text-sm text-destructive">{error}</p>}
+            <div className="flex flex-col gap-4">
+              {error && (
+                <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+                  {error}
+                </div>
+              )}
               <Button
                 onClick={handleGoogleLogin}
-                className="w-full bg-transparent"
+                className="w-full"
                 disabled={isLoading}
                 variant="outline"
               >

@@ -75,7 +75,12 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
         .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order("created_at", { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error("Error loading conversations:", error.message || error)
+        setConversations([])
+        setLoading(false)
+        return
+      }
 
       // Group by conversation (other user + item)
       const conversationMap = new Map<string, any>()
@@ -103,7 +108,8 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
 
       setConversations(Array.from(conversationMap.values()))
     } catch (error) {
-      console.error("Error loading conversations:", error)
+      console.error("Error loading conversations:", error instanceof Error ? error.message : String(error))
+      setConversations([])
     } finally {
       setLoading(false)
     }

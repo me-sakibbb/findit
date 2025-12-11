@@ -47,15 +47,15 @@ export default async function DashboardPage() {
   const { data: matches } = await matchesPromise
 
   return (
-    <div className="min-h-svh flex flex-col">
+    <div className="min-h-svh flex flex-col bg-background">
       <main className="flex-1">
-        <div className="container py-8">
-          <div className="flex items-center justify-between mb-8">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-bold mb-2">My Dashboard</h1>
               <p className="text-muted-foreground">Manage your lost and found items</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-3">
               <Button asChild>
                 <Link href="/post/lost">
                   <Plus className="mr-2 h-4 w-4" />
@@ -80,7 +80,7 @@ export default async function DashboardPage() {
 
             <TabsContent value="active" className="space-y-4">
               {activeItems.length === 0 ? (
-                <div className="text-center py-12 border rounded-lg">
+                <div className="text-center py-12 border rounded-lg bg-card">
                   <p className="text-muted-foreground mb-4">You haven't posted any items yet</p>
                   <Button asChild>
                     <Link href="/post/lost">Post Your First Item</Link>
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
 
             <TabsContent value="matches" className="space-y-4">
               {!matches || matches.length === 0 ? (
-                <div className="text-center py-12 border rounded-lg">
+                <div className="text-center py-12 border rounded-lg bg-card">
                   <p className="text-muted-foreground">
                     No potential matches found yet. Our AI is constantly searching for matches.
                   </p>
@@ -113,7 +113,7 @@ export default async function DashboardPage() {
 
             <TabsContent value="resolved" className="space-y-4">
               {resolvedItems.length === 0 ? (
-                <div className="text-center py-12 border rounded-lg">
+                <div className="text-center py-12 border rounded-lg bg-card">
                   <p className="text-muted-foreground">No resolved items yet</p>
                 </div>
               ) : (

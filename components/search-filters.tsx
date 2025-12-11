@@ -6,12 +6,26 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Search, X, MapPin, CalendarIcon } from "lucide-react"
+import { Search, X, MapPin, CalendarIcon, Loader2 } from "lucide-react"
 import { useState } from "react"
-import { LeafletMapsPicker } from "./leaflet-maps-picker"
+import dynamic from "next/dynamic"
 import { UserSearch } from "./user-search"
 import { DateRangePicker } from "./date-range-picker"
 import type { DateRange } from "react-day-picker"
+
+// Dynamically import LeafletMapsPicker with no SSR to avoid "window is not defined" error
+const LeafletMapsPicker = dynamic(
+  () => import("./leaflet-maps-picker").then((mod) => mod.LeafletMapsPicker),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-12 flex items-center justify-center border rounded-md bg-muted">
+        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+        <span className="text-sm text-muted-foreground">Loading map...</span>
+      </div>
+    ),
+  }
+)
 
 const CATEGORIES = [
   "Electronics",

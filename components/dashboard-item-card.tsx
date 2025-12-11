@@ -86,34 +86,32 @@ export function DashboardItemCard({ item }: DashboardItemCardProps) {
   }
 
   return (
-    <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
-      <CardHeader className="p-0">
-        <div className="relative aspect-video">
-          <img
-            src={imageUrl || "/placeholder.svg"}
-            alt={item.title}
-            className="w-full h-full object-cover rounded-t-lg"
-          />
-          <Badge className="absolute top-2 left-2" variant={item.type === "lost" ? "destructive" : "default"}>
-            {item.type === "lost" ? "Lost" : "Found"}
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col border">
+      <div className="relative aspect-video overflow-hidden bg-muted">
+        <img
+          src={imageUrl || "/placeholder.svg"}
+          alt={item.title}
+          className="w-full h-full object-cover"
+        />
+        <Badge className="absolute top-3 left-3 shadow-md" variant={item.type === "lost" ? "destructive" : "default"}>
+          {item.type === "lost" ? "Lost" : "Found"}
+        </Badge>
+        {item.status === "resolved" && (
+          <Badge className="absolute top-3 right-3 shadow-md" variant="secondary">
+            Resolved
           </Badge>
-          {item.status === "resolved" && (
-            <Badge className="absolute top-2 right-2" variant="secondary">
-              Resolved
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 p-4">
+        )}
+      </div>
+      <CardContent className="flex-1 p-5">
         <h3 className="font-semibold text-lg mb-2 line-clamp-1">{item.title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{item.description}</p>
-        <div className="space-y-1">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{item.description}</p>
+        <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4" />
+            <MapPin className="h-4 w-4 shrink-0" />
             <span className="line-clamp-1">{item.location}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-4 w-4 shrink-0" />
             <span>
               {new Date(item.date_occurred).toLocaleDateString("en-US", {
                 month: "short",
@@ -124,8 +122,8 @@ export function DashboardItemCard({ item }: DashboardItemCardProps) {
           </div>
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0 flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1 bg-transparent" asChild>
+      <CardFooter className="p-5 pt-0 flex gap-3 border-t bg-muted/30">
+        <Button variant="outline" size="sm" className="flex-1" asChild>
           <Link href={`/items/${item.id}`}>View Details</Link>
         </Button>
         <DropdownMenu>

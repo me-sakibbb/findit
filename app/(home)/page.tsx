@@ -4,7 +4,7 @@ import { Search, Upload, MessageCircle, Shield, Sparkles, MapPin } from "lucide-
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-svh">
+    <div className="flex flex-col min-h-svh bg-background">
       <main className="flex-1">
         <section className="container mx-auto px-4 py-16 md:py-24 lg:py-32">
           <div className="max-w-4xl mx-auto text-center">
@@ -22,13 +22,13 @@ export default function HomePage() {
               let our intelligent system do the rest.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-base h-12 px-8" asChild>
+              <Button size="lg" className="h-12 px-8" asChild>
                 <Link href="/items">
                   <Search className="w-5 h-5 mr-2" />
                   Browse Items
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-base h-12 px-8 bg-transparent" asChild>
+              <Button size="lg" variant="outline" className="h-12 px-8" asChild>
                 <Link href="/post/lost">
                   <Upload className="w-5 h-5 mr-2" />
                   Report an Item
@@ -37,7 +37,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
         <section className="bg-muted/30 py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12 md:mb-16">
@@ -86,7 +85,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="grid sm:grid-cols-3 gap-8 md:gap-12 max-w-4xl mx-auto text-center">
@@ -105,7 +103,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
         <section className="bg-primary/5 py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
@@ -113,7 +110,7 @@ export default function HomePage() {
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                 Join thousands of users who have successfully reunited with their lost items through our community
               </p>
-              <Button size="lg" className="text-base h-12 px-8" asChild>
+              <Button size="lg" className="h-12 px-8" asChild>
                 <Link href="/items">
                   <MapPin className="w-5 h-5 mr-2" />
                   Start Searching Now
@@ -123,7 +120,6 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-
       <footer className="border-t bg-card py-8 md:py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">

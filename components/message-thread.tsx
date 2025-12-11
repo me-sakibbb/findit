@@ -124,7 +124,8 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
         supabase.removeChannel(channel)
       }
     } catch (error) {
-      console.error("Error loading thread:", error)
+      console.error("Error loading thread:", error instanceof Error ? error.message : String(error))
+      setMessages([])
     } finally {
       setLoading(false)
     }
@@ -141,10 +142,19 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
         supabase.from("items").select("*").eq("id", itemId).single(),
       ])
 
-      setRecipient(recipientRes.data)
-      setItem(itemRes.data)
+      if (recipientRes.error) {
+        console.error("Error loading recipient:", recipientRes.error.message)
+      } else {
+        setRecipient(recipientRes.data)
+      }
+
+      if (itemRes.error) {
+        console.error("Error loading item:", itemRes.error.message)
+      } else {
+        setItem(itemRes.data)
+      }
     } catch (error) {
-      console.error("Error starting conversation:", error)
+      console.error("Error starting conversation:", error instanceof Error ? error.message : String(error))
     } finally {
       setLoading(false)
     }
@@ -171,7 +181,7 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
         window.location.href = `/messages?thread=${recipientId}-${itemId || "general"}`
       }
     } catch (error) {
-      console.error("Error sending message:", error)
+      console.error("Error sending message:", error instanceof Error ? error.message : String(error))
       toast({
         title: "Send failed",
         description: "Failed to send message. Please try again.",

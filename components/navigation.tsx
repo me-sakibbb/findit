@@ -59,12 +59,12 @@ export function Navigation() {
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto px-4">
-        <div className="flex items-center gap-4 md:gap-6 h-16 md:h-20">
-          <Link href="/" className="font-bold text-2xl md:text-3xl hover:text-primary transition-colors shrink-0">
+        <div className="flex items-center gap-4 md:gap-6 h-16">
+          <Link href="/" className="font-bold text-xl md:text-2xl hover:text-primary transition-colors shrink-0">
             FindIt
           </Link>
 
-          <div className="flex items-center gap-2 md:gap-3 ml-auto">
+          <div className="flex items-center gap-3 ml-auto">
             <form 
               onSubmit={handleSearch} 
               className="group relative hidden md:block"
@@ -99,25 +99,25 @@ export function Navigation() {
               variant="ghost"
               size="sm"
               asChild
-              className={cn("hidden sm:flex text-base", pathname === "/items" && "bg-muted")}
+              className={cn("hidden sm:flex", pathname === "/items" && "bg-muted")}
             >
               <Link href="/items">
-                <Package className="mr-2 h-5 w-5" />
+                <Package className="mr-2 h-4 w-4" />
                 Items
               </Link>
             </Button>
 
-          <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-3">
             {user ? (
               <>
                 <Button
                   variant="ghost"
                   size="sm"
                   asChild
-                  className={cn("hidden md:flex text-base", pathname === "/dashboard" && "bg-muted")}
+                  className={cn("hidden md:flex", pathname === "/dashboard" && "bg-muted")}
                 >
                   <Link href="/dashboard">
-                    <LayoutDashboard className="mr-2 h-5 w-5" />
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
                     Dashboard
                   </Link>
                 </Button>
@@ -125,16 +125,16 @@ export function Navigation() {
                   variant="ghost"
                   size="sm"
                   asChild
-                  className={cn("hidden md:flex text-base", pathname === "/messages" && "bg-muted")}
+                  className={cn("hidden md:flex", pathname === "/messages" && "bg-muted")}
                 >
                   <Link href="/messages">
-                    <MessageSquare className="mr-2 h-5 w-5" />
+                    <MessageSquare className="mr-2 h-4 w-4" />
                     Messages
                   </Link>
                 </Button>
-                <Button size="sm" asChild className="text-base">
+                <Button size="sm" asChild>
                   <Link href="/post/lost">
-                    <Plus className="mr-2 h-5 w-5" />
+                    <Plus className="mr-2 h-4 w-4" />
                     <span className="hidden sm:inline">Post Item</span>
                   </Link>
                 </Button>
@@ -184,11 +184,11 @@ export function Navigation() {
                 </DropdownMenu>
               </>
             ) : (
-              <Button size="sm" asChild className="text-base">
+              <Button size="sm" asChild>
                 <Link href="/auth/login">Sign In</Link>
               </Button>
             )}
-          </div>
+            </div>
           </div>
         </div>
       </div>

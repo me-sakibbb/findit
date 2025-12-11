@@ -17,10 +17,9 @@ export default async function ProfilePage() {
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
   return (
-    <div className="min-h-svh flex flex-col">
-      
+    <div className="min-h-svh flex flex-col bg-background">
       <main className="flex-1">
-        <div className="container py-8 max-w-3xl">
+        <div className="container mx-auto px-4 py-8 max-w-3xl">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Profile Settings</h1>
             <p className="text-muted-foreground">Manage your account information and preferences</p>
@@ -34,13 +33,13 @@ export default async function ProfilePage() {
                 <CardTitle>Account Information</CardTitle>
                 <CardDescription>Your email and account details</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="text-sm text-muted-foreground mb-1">Email</p>
                   <p className="font-medium">{user.email}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Account created</p>
+                  <p className="text-sm text-muted-foreground mb-1">Account created</p>
                   <p className="font-medium">
                     {new Date(user.created_at).toLocaleDateString("en-US", {
                       month: "long",
