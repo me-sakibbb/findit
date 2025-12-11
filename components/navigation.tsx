@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Plus, MessageSquare, LogOut, User, Settings, Package } from "lucide-react"
+import { Search, Plus, MessageSquare, LogOut, User, Settings, Package, Users } from "lucide-react"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -104,6 +104,18 @@ export function Navigation() {
               <Link href="/items">
                 <Package className="mr-2 h-4 w-4" />
                 Items
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className={cn("hidden sm:flex text-base", pathname === "/people" && "bg-muted")}
+            >
+              <Link href="/people">
+                <Users className="mr-2 h-4 w-4" />
+                People
               </Link>
             </Button>
 

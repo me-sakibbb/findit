@@ -26,7 +26,7 @@ export default function AuthCallbackPage() {
       const { data: profile } = await supabase.from("profiles").select("is_onboarded").eq("id", user.id).single()
 
       if (profile && profile.is_onboarded) {
-        router.push("/dashboard")
+        router.push("/profile")
       } else {
         router.push("/onboarding")
       }
