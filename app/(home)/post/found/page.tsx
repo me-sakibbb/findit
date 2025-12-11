@@ -13,12 +13,8 @@ export default async function PostFoundPage() {
   }
 
   return (
-    <div className="min-h-svh flex flex-col">
-      <main className="flex-1">
-        <div className="container mx-auto px-4 max-w-3xl py-8">
-          <ItemPostForm type="found" />
-        </div>
-      </main>
+    <div className="container mx-auto px-4 max-w-3xl py-8">
+      <ItemPostForm type="found" />
     </div>
   )
 }

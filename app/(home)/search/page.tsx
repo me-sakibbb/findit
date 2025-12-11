@@ -82,55 +82,44 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   }
 
   return (
-    <div className="min-h-svh flex flex-col bg-background">
-      
-      <main className="flex-1">
-        <div className="container mx-auto px-4 py-8 md:py-12">
-          <div className="mb-8 md:mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">Search Lost & Found Items</h1>
-            <p className="text-lg text-muted-foreground">Browse through reported lost and found items in your area</p>
-          </div>
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      <div className="mb-8 md:mb-12">
+        <h1 className="text-3xl md:text-4xl font-bold mb-3">Search Lost & Found Items</h1>
+        <p className="text-lg text-muted-foreground">Browse through reported lost and found items in your area</p>
+      </div>
 
-          <div className="grid lg:grid-cols-[320px_1fr] gap-8">
-            <aside>
-              <SearchFilters />
-            </aside>
+      <div className="grid lg:grid-cols-[320px_1fr] gap-8">
+        <aside>
+          <SearchFilters />
+        </aside>
 
-            <div>
-              {filteredItems && filteredItems.length > 0 ? (
-                <>
-                  <div className="mb-6 flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
-                      Showing <span className="font-semibold text-foreground">{filteredItems.length}</span> item(s)
-                      {params.locationName && (
-                        <span>
-                          {" "}
-                          within {params.radius} km of {params.locationName}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredItems.map((item) => (
-                      <ItemCard key={item.id} item={item} />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center">
-                  <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
-                    <Package className="w-10 h-10 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">No items found</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    Try adjusting your filters or search terms to find what you're looking for
-                  </p>
-                </div>
-              )}
+        <div>
+          {filteredItems && filteredItems.length > 0 ? (
+            <>
+              <div className="mb-6 flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Showing <span className="font-semibold text-foreground">{filteredItems.length}</span> item(s)
+                </p>
+              </div>
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredItems.map((item) => (
+                  <ItemCard key={item.id} item={item} />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center">
+              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
+                <Package className="w-10 h-10 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No items found</h3>
+              <p className="text-muted-foreground max-w-md">
+                No items matched your search criteria. Try adjusting your filters.
+              </p>
             </div>
-          </div>
+          )}
         </div>
-      </main>
+      </div>
     </div>
   )
 }

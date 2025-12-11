@@ -25,20 +25,16 @@ export default async function MessagesPage({ searchParams }: MessagesPageProps) 
   const params = await searchParams
 
   return (
-    <div className="min-h-svh flex flex-col bg-background">
-      <main className="flex-1">
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Messages</h1>
-            <p className="text-muted-foreground">Connect with people about lost and found items</p>
-          </div>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Messages</h1>
+        <p className="text-muted-foreground">Connect with people about lost and found items</p>
+      </div>
 
-          <div className="grid lg:grid-cols-[350px_1fr] gap-6 h-[calc(100vh-250px)]">
-            <MessageList userId={user.id} activeThreadId={params.thread} />
-            <MessageThread userId={user.id} threadId={params.thread} itemId={params.item} recipientId={params.user} />
-          </div>
-        </div>
-      </main>
+      <div className="grid lg:grid-cols-[350px_1fr] gap-6 h-[calc(100vh-250px)]">
+        <MessageList userId={user.id} activeThreadId={params.thread} />
+        <MessageThread userId={user.id} threadId={params.thread} itemId={params.item} recipientId={params.user} />
+      </div>
     </div>
   )
 }
