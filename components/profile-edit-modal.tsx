@@ -1,8 +1,5 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { createBrowserClient } from "@/lib/supabase/client"
 import {
   Dialog,
   DialogContent,
@@ -17,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Pencil, Upload, Loader2 } from "lucide-react"
-import { toast } from "sonner"
+import { useProfileEditModal } from "@/hooks/use-profile"
 
 interface Profile {
   id: string
@@ -37,95 +34,23 @@ interface ProfileEditModalProps {
 }
 
 export function ProfileEditModal({ profile }: ProfileEditModalProps) {
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  
-  const [formData, setFormData] = useState({
-    full_name: profile?.full_name || "",
-    bio: profile?.bio || "",
-    phone: profile?.phone || "",
-    address: profile?.address || "",
-    city: profile?.city || "",
-    state: profile?.state || "",
-    zip_code: profile?.zip_code || "",
-    preferred_contact: profile?.preferred_contact || "both",
-  })
-  
-  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || "")
+  const {
+    open,
+    setOpen,
+    loading,
+    uploading,
+    formData,
+    setFormData,
+    avatarUrl,
+    handleAvatarUpload,
+    handleSubmit,
+  } = useProfileEditModal(profile)
 
   const initials = profile?.full_name
     ?.split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase() || "?"
-
-  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    try {
-      setUploading(true)
-      
-      if (!e.target.files || e.target.files.length === 0) {
-        return
-      }
-
-      const file = e.target.files[0]
-      const fileExt = file.name.split(".").pop()
-      const fileName = `${profile?.id}-${Math.random()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
-
-      const supabase = createBrowserClient()
-
-      const { error: uploadError } = await supabase.storage
-        .from("items")
-        .upload(filePath, file, { upsert: true })
-
-      if (uploadError) {
-        throw uploadError
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("items").getPublicUrl(filePath)
-
-      setAvatarUrl(publicUrl)
-      
-      toast.success("Avatar uploaded successfully!")
-    } catch (error) {
-      console.error("Error uploading avatar:", error)
-      toast.error("Failed to upload avatar")
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    
-    try {
-      setLoading(true)
-      const supabase = createBrowserClient()
-
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          ...formData,
-          avatar_url: avatarUrl,
-        })
-        .eq("id", profile?.id)
-
-      if (error) throw error
-
-      toast.success("Profile updated successfully!")
-      setOpen(false)
-      router.refresh()
-    } catch (error) {
-      console.error("Error updating profile:", error)
-      toast.error("Failed to update profile")
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

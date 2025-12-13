@@ -4,9 +4,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Plus, MessageSquare, LogOut, User, Settings, Package, Users } from "lucide-react"
-import { createBrowserClient } from "@/lib/supabase/client"
-import { useRouter, usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
@@ -17,44 +14,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useNavigation } from "@/hooks/use-navigation"
 
 export function Navigation() {
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const router = useRouter()
-  const pathname = usePathname()
-  const supabase = createBrowserClient()
-
-  useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-
-      if (user) {
-        const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-        setProfile(profile)
-      }
-    }
-    getUser()
-  }, [supabase])
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/")
-    router.refresh()
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      router.push(`/items?q=${encodeURIComponent(searchQuery.trim())}`)
-    } else {
-      router.push("/items")
-    }
-  }
+  const {
+    user,
+    profile,
+    searchQuery,
+    setSearchQuery,
+    handleSignOut,
+    handleSearch,
+    pathname
+  } = useNavigation()
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 py-2">

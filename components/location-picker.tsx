@@ -1,18 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { MapPin, Check, Map } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-interface Location {
-  name: string
-  division: string
-  lat: number
-  lng: number
-}
+import { useLocationPicker, Location } from "@/hooks/use-location-picker"
 
 interface LocationPickerProps {
   value?: string
@@ -20,30 +13,15 @@ interface LocationPickerProps {
 }
 
 export function LocationPicker({ value, onSelect }: LocationPickerProps) {
-  const [open, setOpen] = useState(false)
-  const [locations, setLocations] = useState<Location[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
-
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const response = await fetch(`/api/locations?q=${searchQuery}`)
-        const data = await response.json()
-        setLocations(data)
-      } catch (error) {
-        console.error("[v0] Error fetching locations:", error)
-      }
-    }
-
-    fetchLocations()
-  }, [searchQuery])
-
-  const handleSelect = (location: Location) => {
-    setSelectedLocation(location)
-    onSelect(location)
-    setOpen(false)
-  }
+  const {
+    open,
+    setOpen,
+    locations,
+    searchQuery,
+    setSearchQuery,
+    selectedLocation,
+    handleSelect,
+  } = useLocationPicker({ value, onSelect })
 
   return (
     <div className="space-y-2">

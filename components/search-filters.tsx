@@ -1,17 +1,15 @@
 "use client"
 
-import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Search, X, MapPin, CalendarIcon, Loader2 } from "lucide-react"
-import { useState } from "react"
 import dynamic from "next/dynamic"
 import { UserSearch } from "./user-search"
 import { DateRangePicker } from "./date-range-picker"
-import type { DateRange } from "react-day-picker"
+import { useSearchFilters } from "@/hooks/use-search-filters"
 
 // Dynamically import LeafletMapsPicker with no SSR to avoid "window is not defined" error
 const LeafletMapsPicker = dynamic(
@@ -41,50 +39,24 @@ const CATEGORIES = [
 ]
 
 export function SearchFilters() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "")
-  const [type, setType] = useState(searchParams.get("type") || "all")
-  const [category, setCategory] = useState(searchParams.get("category") || "all")
-  const [location, setLocation] = useState<{ name: string; lat: number; lng: number } | null>(null)
-  const [radius, setRadius] = useState(searchParams.get("radius") || "10")
-  const [userId, setUserId] = useState<string | null>(searchParams.get("userId") || null)
-  const [dateRange, setDateRange] = useState<DateRange | undefined>()
-
-  const applyFilters = () => {
-    const params = new URLSearchParams()
-
-    if (searchQuery) params.set("q", searchQuery)
-    if (type !== "all") params.set("type", type)
-    if (category !== "all") params.set("category", category)
-    if (location) {
-      params.set("locationName", location.name)
-      params.set("lat", location.lat.toString())
-      params.set("lng", location.lng.toString())
-      params.set("radius", radius)
-    }
-    if (userId) params.set("userId", userId)
-    if (dateRange?.from) {
-      params.set("dateFrom", dateRange.from.toISOString())
-      if (dateRange.to) {
-        params.set("dateTo", dateRange.to.toISOString())
-      }
-    }
-
-    router.push(`/search?${params.toString()}`)
-  }
-
-  const clearFilters = () => {
-    setSearchQuery("")
-    setType("all")
-    setCategory("all")
-    setLocation(null)
-    setRadius("10")
-    setUserId(null)
-    setDateRange(undefined)
-    router.push("/search")
-  }
+  const {
+    searchQuery,
+    setSearchQuery,
+    type,
+    setType,
+    category,
+    setCategory,
+    location,
+    setLocation,
+    radius,
+    setRadius,
+    userId,
+    setUserId,
+    dateRange,
+    setDateRange,
+    applyFilters,
+    clearFilters
+  } = useSearchFilters()
 
   return (
     <Card className="sticky top-24 shadow-sm">
