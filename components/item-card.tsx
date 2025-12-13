@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, MapPin, MoreVertical, Bookmark, Shield, CheckCircle } from "lucide-react"
@@ -11,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { createBrowserClient } from "@/lib/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 
 interface ItemCardProps {
   item: {
@@ -34,6 +39,70 @@ interface ItemCardProps {
 
 
 export function ItemCard({ item }: ItemCardProps) {
+  const supabase = createBrowserClient()
+  const { toast } = useToast()
+  const [saved, setSaved] = useState(false)
+
+  const checkSaved = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        setSaved(false)
+        return
+      }
+
+      const { data } = await supabase
+        .from("saved_items")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("item_id", item.id)
+        .maybeSingle()
+
+      setSaved(!!data)
+    } catch (err) {
+      console.error("Error checking saved state:", err)
+    }
+  }, [item.id, supabase])
+
+  useEffect(() => {
+    checkSaved()
+  }, [checkSaved])
+
+  const toggleSaved = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        toast({ title: "Sign in required", description: "Please sign in to save items." })
+        return
+      }
+
+      if (saved) {
+        // remove
+        const { error } = await supabase
+          .from("saved_items")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("item_id", item.id)
+
+        if (error) throw error
+        setSaved(false)
+        toast({ title: "Removed", description: "Item removed from saved items." })
+      } else {
+        // add
+        const { error } = await supabase.from("saved_items").insert({ user_id: user.id, item_id: item.id })
+        if (error) throw error
+        setSaved(true)
+        toast({ title: "Saved", description: "Item saved for later." })
+      }
+    } catch (err: any) {
+      console.error("Error toggling saved state:", err)
+      toast({ title: "Error", description: err?.message || "Could not update saved items." })
+    }
+  }
   const imageUrl = item.image_url || "/lost-found-item.jpg"
 
   // Safely get user info
@@ -79,9 +148,11 @@ export function ItemCard({ item }: ItemCardProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Bookmark className="mr-2 h-4 w-4" />
-                <span>Bookmark</span>
+              <DropdownMenuItem asChild>
+                <button type="button" onClick={toggleSaved} className="w-full text-left flex items-center">
+                  <Bookmark className="mr-2 h-4 w-4" />
+                  <span>{saved ? "Remove Bookmark" : "Bookmark"}</span>
+                </button>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 {item.status === "lost" ? (

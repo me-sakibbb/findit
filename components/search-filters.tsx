@@ -38,7 +38,7 @@ const CATEGORIES = [
   "Other",
 ]
 
-export function SearchFilters() {
+export function SearchFilters({ savedOnly }: { savedOnly?: boolean }) {
   const {
     searchQuery,
     setSearchQuery,
@@ -56,7 +56,7 @@ export function SearchFilters() {
     setDateRange,
     applyFilters,
     clearFilters
-  } = useSearchFilters()
+  } = useSearchFilters(savedOnly)
 
   return (
     <Card className="sticky top-24 shadow-sm">

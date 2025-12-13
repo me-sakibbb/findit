@@ -1,0 +1,73 @@
+import { createServerClient } from "@/lib/supabase/server"
+import { SearchFilters } from "@/components/search-filters"
+import { ItemCard } from "@/components/item-card"
+import { Package } from "lucide-react"
+
+export default async function SavedItemsPage() {
+  const supabase = await createServerClient()
+  // Fetch saved items for the logged-in user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  let items = []
+  if (user) {
+    // Assuming a 'saved_items' table with user_id and item_id
+    const { data: saved, error: savedError } = await supabase
+      .from("saved_items")
+      .select("item_id")
+      .eq("user_id", user.id)
+
+    if (!savedError && saved && saved.length > 0) {
+      const itemIds = saved.map((s) => s.item_id)
+      const { data: fetchedItems } = await supabase
+        .from("items")
+        .select("*, profiles(id, full_name, avatar_url)")
+        .in("id", itemIds)
+        .order("created_at", { ascending: false })
+      items = fetchedItems || []
+    }
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      <div className="mb-8 md:mb-12">
+        <h1 className="text-3xl md:text-4xl font-bold mb-3">Saved Items</h1>
+        <p className="text-lg text-muted-foreground">These are the items you have saved for later. You can manage or revisit them here.</p>
+      </div>
+
+      <div className="grid lg:grid-cols-[320px_1fr] gap-8">
+        <aside>
+          <SearchFilters savedOnly />
+        </aside>
+
+        <div>
+          {items && items.length > 0 ? (
+            <>
+              <div className="mb-6 flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Showing <span className="font-semibold text-foreground">{items.length}</span> saved item(s)
+                </p>
+              </div>
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                {items.map((item) => (
+                  <ItemCard key={item.id} item={item} />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center">
+              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
+                <Package className="w-10 h-10 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No saved items</h3>
+              <p className="text-muted-foreground max-w-md">
+                You haven't saved any items yet. Browse items and click the bookmark icon to save them for later.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -8,7 +8,7 @@ export interface Location {
   lng: number
 }
 
-export function useSearchFilters() {
+export function useSearchFilters(savedOnly?: boolean) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -40,7 +40,11 @@ export function useSearchFilters() {
       }
     }
 
-    router.push(`/search?${params.toString()}`)
+    if (savedOnly) {
+      router.push(`/saved?${params.toString()}`)
+    } else {
+      router.push(`/search?${params.toString()}`)
+    }
   }
 
   const clearFilters = () => {
@@ -51,7 +55,11 @@ export function useSearchFilters() {
     setRadius("10")
     setUserId(null)
     setDateRange(undefined)
-    router.push("/search")
+    if (savedOnly) {
+      router.push("/saved")
+    } else {
+      router.push("/search")
+    }
   }
 
   return {
