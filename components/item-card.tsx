@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { createBrowserClient } from "@/lib/supabase/client"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface ItemCardProps {
   item: {
@@ -40,7 +40,6 @@ interface ItemCardProps {
 
 export function ItemCard({ item }: ItemCardProps) {
   const supabase = createBrowserClient()
-  const { toast } = useToast()
   const [saved, setSaved] = useState(false)
 
   const checkSaved = useCallback(async () => {
@@ -76,7 +75,7 @@ export function ItemCard({ item }: ItemCardProps) {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) {
-        toast({ title: "Sign in required", description: "Please sign in to save items." })
+        toast.success("Sign in required", { description: "Please sign in to save items." })
         return
       }
 
@@ -88,19 +87,19 @@ export function ItemCard({ item }: ItemCardProps) {
           .eq("user_id", user.id)
           .eq("item_id", item.id)
 
-        if (error) throw error
-        setSaved(false)
-        toast({ title: "Removed", description: "Item removed from saved items." })
+  if (error) throw error
+  setSaved(false)
+  toast.success("Removed", { description: "Item removed from saved items." })
       } else {
         // add
         const { error } = await supabase.from("saved_items").insert({ user_id: user.id, item_id: item.id })
-        if (error) throw error
-        setSaved(true)
-        toast({ title: "Saved", description: "Item saved for later." })
+  if (error) throw error
+  setSaved(true)
+  toast.success("Saved", { description: "Item saved for later." })
       }
     } catch (err: any) {
-      console.error("Error toggling saved state:", err)
-      toast({ title: "Error", description: err?.message || "Could not update saved items." })
+  console.error("Error toggling saved state:", err)
+  toast.error("Error", { description: err?.message || "Could not update saved items." })
     }
   }
   const imageUrl = item.image_url || "/lost-found-item.jpg"

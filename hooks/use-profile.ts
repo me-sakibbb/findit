@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createBrowserClient } from "@/lib/supabase/client"
-import { useToast } from "@/hooks/use-toast"
 import { toast as sonnerToast } from "sonner"
 
 interface Profile {
@@ -27,7 +26,6 @@ export function useProfileForm(profile: Profile | null) {
   const [uploading, setUploading] = useState(false)
   const [updating, setUpdating] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
   const supabase = createBrowserClient()
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,16 +47,9 @@ export function useProfileForm(profile: Profile | null) {
       const data = await response.json()
       setAvatarUrl(data.url)
 
-      toast({
-        title: "Avatar uploaded",
-        description: "Your profile picture has been updated",
-      })
+      sonnerToast.success("Avatar uploaded", { description: "Your profile picture has been updated" })
     } catch (error) {
-      toast({
-        title: "Upload failed",
-        description: "Failed to upload avatar. Please try again.",
-        variant: "destructive",
-      })
+      sonnerToast.error("Upload failed", { description: "Failed to upload avatar. Please try again." })
     } finally {
       setUploading(false)
     }
@@ -81,17 +72,10 @@ export function useProfileForm(profile: Profile | null) {
 
       if (error) throw error
 
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been saved successfully",
-      })
+      sonnerToast.success("Profile updated", { description: "Your profile has been saved successfully" })
     } catch (error) {
       console.error("Error updating profile:", error)
-      toast({
-        title: "Update failed",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      })
+      sonnerToast.error("Update failed", { description: "Failed to update profile. Please try again." })
     } finally {
       setUpdating(false)
     }

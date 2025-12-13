@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { createBrowserClient } from "@/lib/supabase/client"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 export interface Conversation {
   id: string
@@ -151,7 +151,6 @@ export function useMessageThread({ userId, threadId, itemId, recipientId }: UseM
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const supabase = createBrowserClient()
-  const { toast } = useToast()
   const router = useRouter()
 
   const scrollToBottom = () => {
@@ -234,11 +233,7 @@ export function useMessageThread({ userId, threadId, itemId, recipientId }: UseM
       }
     } catch (error) {
       console.error("Error loading thread:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load conversation",
-        variant: "destructive",
-      })
+      toast.error("Error", { description: "Failed to load conversation" })
       setMessages([])
     } finally {
       if (initialLoad) {
@@ -305,11 +300,7 @@ export function useMessageThread({ userId, threadId, itemId, recipientId }: UseM
 
       if (recipientRes.error) {
         console.error("Error loading recipient:", recipientRes.error.message)
-        toast({
-          title: "Error",
-          description: "Failed to load recipient profile",
-          variant: "destructive",
-        })
+        toast.error("Error", { description: "Failed to load recipient profile" })
       } else {
         console.log("Loaded recipient:", recipientRes.data)
         setRecipient(recipientRes.data)
@@ -327,11 +318,7 @@ export function useMessageThread({ userId, threadId, itemId, recipientId }: UseM
       }
     } catch (error) {
       console.error("Error starting conversation:", error instanceof Error ? error.message : String(error))
-      toast({
-        title: "Error",
-        description: "Failed to start conversation",
-        variant: "destructive",
-      })
+      toast.error("Error", { description: "Failed to start conversation" })
     } finally {
       setLoading(false)
     }
@@ -350,11 +337,7 @@ export function useMessageThread({ userId, threadId, itemId, recipientId }: UseM
     }
 
     if (!targetRecipientId) {
-      toast({
-        title: "Error",
-        description: "No recipient specified",
-        variant: "destructive",
-      })
+      toast.error("Error", { description: "No recipient specified" })
       return
     }
 
@@ -409,11 +392,7 @@ export function useMessageThread({ userId, threadId, itemId, recipientId }: UseM
       }
     } catch (error) {
       console.error("Error sending message:", error)
-      toast({
-        title: "Send failed",
-        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Send failed", { description: error instanceof Error ? error.message : "Failed to send message. Please try again." })
     } finally {
       setSending(false)
     }

@@ -123,3 +123,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Sonner toast color overrides so success -> greenish, error/destructive -> reddish
+   These set the CSS variables the Sonner Toaster uses for its "rich colors" mode. */
+[data-sonner-toaster][data-theme=light] {
+  --success-bg: #16a34a; /* green-600, light bg */
+  --success-border: #15803d; /* green-700 */
+  --success-text: #ffffff;
+  --error-bg: #dc2626; /* red-600 */
+  --error-border: #b91c1c; /* red-700 */
+  --error-text: #ffffff;
+}
+
+[data-sonner-toaster][data-theme=dark] {
+  /* In dark mode Sonner uses darker backgrounds; keep contrast with white text */
+  --success-bg: #16a34a;
+  --success-border: #15803d;
+  --success-text: #ffffff;
+  --error-bg: #dc2626;
+  --error-border: #b91c1c;
+  --error-text: #ffffff;
+}
