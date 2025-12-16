@@ -10,13 +10,15 @@ import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { useLeafletMaps, Location } from "@/hooks/use-leaflet-maps"
 
-// Fix for default marker icons in Next.js
-delete (L.Icon.Default.prototype as any)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-})
+// Fix for default marker icons in Next.js - moved to component to avoid SSR issues
+const fixLeafletIcons = () => {
+  delete (L.Icon.Default.prototype as any)._getIconUrl
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  })
+}
 
 interface LeafletMapsPickerProps {
   value?: Location | null
@@ -36,11 +38,11 @@ function MapClickHandler({ onLocationSelect }: { onLocationSelect: (lat: number,
 // Component to update map view when location changes
 function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap()
-  
+
   useEffect(() => {
     map.setView(center, zoom)
   }, [center, zoom, map])
-  
+
   return null
 }
 
@@ -61,13 +63,17 @@ export function LeafletMapsPicker({ value, onSelect }: LeafletMapsPickerProps) {
     handleClear
   } = useLeafletMaps({ value, onSelect })
 
+  useEffect(() => {
+    fixLeafletIcons()
+  }, [])
+
   return (
     <div className="space-y-2">
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className="w-full justify-start text-left font-normal bg-transparent">
-            <MapPin className="mr-2 h-4 w-4 text-teal-600" />
-            {selectedLocation ? selectedLocation.name : "Select location from map..."}
+            <MapPin className="mr-2 h-4 w-4 text-teal-600 shrink-0" />
+            <span className="truncate">{selectedLocation ? selectedLocation.name : "Select location from map..."}</span>
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-3xl h-[600px] flex flex-col">
@@ -78,17 +84,16 @@ export function LeafletMapsPicker({ value, onSelect }: LeafletMapsPickerProps) {
             <div className="relative">
               <Input
                 type="text"
-                placeholder={process.env.NEXT_PUBLIC_OPENCAGE_API_KEY ? "Search for a location..." : "Search disabled - Click on map to select location"}
+                placeholder="Search for a location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full"
-                disabled={!process.env.NEXT_PUBLIC_OPENCAGE_API_KEY}
               />
               {isSearching && (
                 <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
               )}
               {searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto z-50">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto z-[1000]">
                   {searchResults.map((result, index) => (
                     <button
                       key={index}
@@ -103,7 +108,7 @@ export function LeafletMapsPicker({ value, onSelect }: LeafletMapsPickerProps) {
                 </div>
               )}
             </div>
-            
+
             <div className="flex-1 rounded-lg border overflow-hidden">
               <MapContainer
                 center={mapCenter}
@@ -122,7 +127,7 @@ export function LeafletMapsPicker({ value, onSelect }: LeafletMapsPickerProps) {
                 )}
               </MapContainer>
             </div>
-            
+
             {selectedLocation && (
               <div className="text-sm text-muted-foreground">
                 Selected: {selectedLocation.name}

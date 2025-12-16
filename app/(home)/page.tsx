@@ -28,7 +28,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 px-8" asChild>
-              <Link href="/post/lost">
+              <Link href="/post">
                 <Upload className="w-5 h-5 mr-2" />
                 Report an Item
               </Link>

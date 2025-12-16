@@ -28,30 +28,22 @@ export function useLeafletMaps({ value, onSelect }: UseLeafletMapsProps) {
     }
   }, [selectedLocation])
 
-  // Reverse geocode using OpenCage API
+  // Reverse geocode using Nominatim (OpenStreetMap)
   const reverseGeocode = async (lat: number, lng: number) => {
-    const apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY
-    if (!apiKey) {
-      console.warn("[Leaflet] OpenCage API key not found. Using coordinates as location name.")
-      setSelectedLocation({
-        name: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
-        lat,
-        lng,
-      })
-      return
-    }
-
     try {
       const response = await fetch(
-        `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${apiKey}`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+        {
+          headers: {
+            "User-Agent": "FindItApp/1.0"
+          }
+        }
       )
       const data = await response.json()
-      
-      console.log("[Leaflet] Reverse geocode response:", data) // Debug log
-      
-      if (data.results && data.results[0]) {
+
+      if (data && data.display_name) {
         setSelectedLocation({
-          name: data.results[0].formatted,
+          name: data.display_name,
           lat,
           lng,
         })
@@ -72,45 +64,33 @@ export function useLeafletMaps({ value, onSelect }: UseLeafletMapsProps) {
     }
   }
 
-  // Search for locations using OpenCage API
+  // Search for locations using Nominatim
   const searchLocation = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([])
       return
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY
-    if (!apiKey) {
-      console.warn("[Leaflet] OpenCage API key not found. Search disabled.")
-      setSearchResults([{
-        formatted: "⚠️ Search disabled - Add OpenCage API key to enable",
-        geometry: { lat: 0, lng: 0 },
-        disabled: true
-      }])
-      return
-    }
-
     setIsSearching(true)
     try {
-      // Remove country restriction to allow worldwide search
       const response = await fetch(
-        `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${apiKey}&limit=5`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`,
+        {
+          headers: {
+            "User-Agent": "FindItApp/1.0"
+          }
+        }
       )
       const data = await response.json()
-      
-      console.log("[Leaflet] Search response:", data) // Debug log
-      
-      if (data.status?.code === 402) {
-        setSearchResults([{
-          formatted: "⚠️ API quota exceeded - Please try again later",
-          geometry: { lat: 0, lng: 0 },
-          disabled: true
-        }])
-      } else if (data.results && data.results.length > 0) {
-        setSearchResults(data.results)
+
+      if (data && data.length > 0) {
+        setSearchResults(data.map((item: any) => ({
+          formatted: item.display_name,
+          geometry: { lat: parseFloat(item.lat), lng: parseFloat(item.lon) }
+        })))
       } else {
         setSearchResults([{
-          formatted: "No results found - Try a different search term",
+          formatted: "No results found",
           geometry: { lat: 0, lng: 0 },
           disabled: true
         }])
@@ -118,7 +98,7 @@ export function useLeafletMaps({ value, onSelect }: UseLeafletMapsProps) {
     } catch (error) {
       console.error("[Leaflet] Location search failed:", error)
       setSearchResults([{
-        formatted: "❌ Search failed - Please check your internet connection",
+        formatted: "❌ Search failed - Please check your connection",
         geometry: { lat: 0, lng: 0 },
         disabled: true
       }])
@@ -131,7 +111,7 @@ export function useLeafletMaps({ value, onSelect }: UseLeafletMapsProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       searchLocation(searchQuery)
-    }, 500)
+    }, 1000)
 
     return () => clearTimeout(timer)
   }, [searchQuery])
@@ -142,7 +122,7 @@ export function useLeafletMaps({ value, onSelect }: UseLeafletMapsProps) {
 
   const handleSearchResultClick = (result: any) => {
     if (result.disabled) return
-    
+
     const lat = result.geometry.lat
     const lng = result.geometry.lng
     setSelectedLocation({

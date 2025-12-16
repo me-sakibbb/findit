@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
+import { ClaimModal } from "@/components/claim-modal"
 
 interface ItemCardProps {
   item: {
@@ -36,11 +37,12 @@ interface ItemCardProps {
   }
 }
 
-
-
 export function ItemCard({ item }: ItemCardProps) {
   const supabase = createBrowserClient()
   const [saved, setSaved] = useState(false)
+  const [claimModalOpen, setClaimModalOpen] = useState(false)
+  const [itemQuestions, setItemQuestions] = useState<any[]>([])
+  const [loadingQuestions, setLoadingQuestions] = useState(false)
 
   const checkSaved = useCallback(async () => {
     try {
@@ -87,21 +89,40 @@ export function ItemCard({ item }: ItemCardProps) {
           .eq("user_id", user.id)
           .eq("item_id", item.id)
 
-  if (error) throw error
-  setSaved(false)
-  toast.success("Removed", { description: "Item removed from saved items." })
+        if (error) throw error
+        setSaved(false)
+        toast.success("Removed", { description: "Item removed from saved items." })
       } else {
         // add
         const { error } = await supabase.from("saved_items").insert({ user_id: user.id, item_id: item.id })
-  if (error) throw error
-  setSaved(true)
-  toast.success("Saved", { description: "Item saved for later." })
+        if (error) throw error
+        setSaved(true)
+        toast.success("Saved", { description: "Item saved for later." })
       }
     } catch (err: any) {
-  console.error("Error toggling saved state:", err)
-  toast.error("Error", { description: err?.message || "Could not update saved items." })
+      console.error("Error toggling saved state:", err)
+      toast.error("Error", { description: err?.message || "Could not update saved items." })
     }
   }
+
+  const handleClaimClick = async () => {
+    setLoadingQuestions(true)
+    try {
+      const { data: questions } = await supabase
+        .from("questions")
+        .select("*")
+        .eq("item_id", item.id)
+
+      setItemQuestions(questions || [])
+      setClaimModalOpen(true)
+    } catch (error) {
+      console.error("Error fetching questions:", error)
+      toast.error("Error", { description: "Could not load verification questions." })
+    } finally {
+      setLoadingQuestions(false)
+    }
+  }
+
   const imageUrl = item.image_url || "/lost-found-item.jpg"
 
   // Safely get user info
@@ -153,13 +174,15 @@ export function ItemCard({ item }: ItemCardProps) {
                   <span>{saved ? "Remove Bookmark" : "Bookmark"}</span>
                 </button>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleClaimClick} disabled={loadingQuestions}>
                 {item.status === "lost" ? (
                   <CheckCircle className="mr-2 h-4 w-4" />
                 ) : (
                   <CheckCircle className="mr-2 h-4 w-4" />
                 )}
-                <span>{item.status === "lost" ? "Mark as Found" : "Claim Item"}</span>
+                <span>
+                  {loadingQuestions ? "Loading..." : (item.status === "lost" ? "Mark as Found" : "Claim Item")}
+                </span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-red-500">
@@ -203,6 +226,15 @@ export function ItemCard({ item }: ItemCardProps) {
           </Link>
         </div>
       </div>
+      <ClaimModal
+        open={claimModalOpen}
+        onOpenChange={setClaimModalOpen}
+        item={{
+          id: item.id,
+          title: item.title,
+          questions: itemQuestions
+        }}
+      />
     </Card>
   )
 }

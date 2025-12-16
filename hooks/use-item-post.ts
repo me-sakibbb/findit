@@ -20,6 +20,8 @@ export function useItemPost({ type }: UseItemPostProps) {
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [categorizing, setCategorizing] = useState(false)
+  const [questions, setQuestions] = useState<{ text: string; answer: string }[]>([])
+  const [generatingQuestions, setGeneratingQuestions] = useState(false)
   const router = useRouter()
 
   const handleAutoCategorize = async () => {
@@ -33,7 +35,7 @@ export function useItemPost({ type }: UseItemPostProps) {
       console.log("[Form] Calling AI categorization...")
       const result = await categorizeItem(title, description)
       console.log("[Form] AI result:", result)
-      
+
       if (result) {
         setCategory(result.category)
 
@@ -46,6 +48,36 @@ export function useItemPost({ type }: UseItemPostProps) {
       toast.error("Categorization failed", { description: "An error occurred. Check the console for details." })
     } finally {
       setCategorizing(false)
+    }
+  }
+
+  const generateQuestions = async () => {
+    if (!title || !description) {
+      toast.error("Missing information", { description: "Please provide both title and description first" })
+      return
+    }
+
+    setGeneratingQuestions(true)
+    try {
+      const response = await fetch("/api/ai/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description, category }),
+      })
+
+      if (!response.ok) throw new Error("Failed to generate questions")
+
+      const data = await response.json()
+      if (data.questions && Array.isArray(data.questions)) {
+        const newQuestions = data.questions.map((q: string) => ({ text: q, answer: "" }))
+        setQuestions([...questions, ...newQuestions])
+        toast.success("Questions generated", { description: `Added ${data.questions.length} questions` })
+      }
+    } catch (error) {
+      console.log("Error generating questions:", error)
+      toast.error("Generation failed", { description: "Could not generate questions. Please try again." })
+    } finally {
+      setGeneratingQuestions(false)
     }
   }
 
@@ -70,14 +102,14 @@ export function useItemPost({ type }: UseItemPostProps) {
 
       for (const file of Array.from(files)) {
         // Validate file type
-          if (!file.type.startsWith("image/")) {
+        if (!file.type.startsWith("image/")) {
           toast.error("Invalid file type", { description: `${file.name} is not an image` })
           continue
         }
 
         // Validate file size (max 5MB)
         const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-          if (file.size > MAX_FILE_SIZE) {
+        if (file.size > MAX_FILE_SIZE) {
           toast.error("File too large", { description: `${file.name} exceeds 5MB limit` })
           continue
         }
@@ -163,6 +195,23 @@ export function useItemPost({ type }: UseItemPostProps) {
 
       if (error) throw error
 
+      // Insert questions if any
+      if (questions.length > 0) {
+        const { error: questionsError } = await supabase.from("questions").insert(
+          questions.map((q) => ({
+            item_id: newItem.id,
+            question_text: q.text,
+            correct_answer: q.answer || null,
+          })),
+        )
+
+        if (questionsError) {
+          console.error("Error saving questions:", questionsError)
+          // Don't block success, but notify
+          toast.error("Warning", { description: "Item posted but questions failed to save." })
+        }
+      }
+
       toast.success("Item posted!", { description: `Your ${type} item has been posted successfully.` })
 
       router.push("/profile")
@@ -193,5 +242,9 @@ export function useItemPost({ type }: UseItemPostProps) {
     handleImageUpload,
     removeImage,
     handleSubmit,
+    questions,
+    setQuestions,
+    generatingQuestions,
+    generateQuestions,
   }
 }

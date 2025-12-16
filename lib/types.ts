@@ -57,3 +57,21 @@ export interface PotentialMatch {
   match_score: number
   created_at: string
 }
+
+export interface Question {
+  id: string
+  item_id: string
+  question_text: string
+  correct_answer?: string
+  created_at: string
+}
+
+export interface Claim {
+  id: string
+  item_id: string
+  claimant_id: string
+  answers: Record<string, string>
+  ai_verdict: string
+  status: "pending" | "approved" | "rejected"
+  created_at: string
+}

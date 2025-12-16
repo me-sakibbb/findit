@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React, { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Upload, X, Loader2, Sparkles } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useItemPost } from "@/hooks/use-item-post"
+import { QuestionModal } from "@/components/question-modal"
+import { ShieldCheck } from "lucide-react"
 
 // Dynamically import LeafletMapsPicker with no SSR to avoid "window is not defined" error
 const LeafletMapsPicker = dynamic(() => import("@/components/leaflet-maps-picker").then((mod) => mod.LeafletMapsPicker), {
@@ -60,7 +62,13 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
     handleImageUpload,
     removeImage,
     handleSubmit,
+    questions,
+    setQuestions,
+    generatingQuestions,
+    generateQuestions,
   } = useItemPost({ type })
+
+  const [questionModalOpen, setQuestionModalOpen] = useState(false)
 
   return (
     <Card>
@@ -198,6 +206,35 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
               </div>
             )}
           </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Verification Questions (Optional)</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setQuestionModalOpen(true)}
+              >
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Manage Questions ({questions.length})
+              </Button>
+            </div>
+            {questions.length > 0 && (
+              <div className="text-sm text-muted-foreground">
+                {questions.length} question{questions.length !== 1 ? "s" : ""} set for verification.
+              </div>
+            )}
+          </div>
+
+          <QuestionModal
+            open={questionModalOpen}
+            onOpenChange={setQuestionModalOpen}
+            questions={questions}
+            setQuestions={setQuestions}
+            onGenerateAI={generateQuestions}
+            isGenerating={generatingQuestions}
+          />
 
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? (
