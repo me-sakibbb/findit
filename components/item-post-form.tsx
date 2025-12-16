@@ -207,25 +207,27 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
             )}
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Verification Questions (Optional)</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setQuestionModalOpen(true)}
-              >
-                <ShieldCheck className="mr-2 h-4 w-4" />
-                Manage Questions ({questions.length})
-              </Button>
-            </div>
-            {questions.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                {questions.length} question{questions.length !== 1 ? "s" : ""} set for verification.
+          {type === "found" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Verification Questions (Optional)</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuestionModalOpen(true)}
+                >
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Manage Questions ({questions.length})
+                </Button>
               </div>
-            )}
-          </div>
+              {questions.length > 0 && (
+                <div className="text-sm text-muted-foreground">
+                  {questions.length} question{questions.length !== 1 ? "s" : ""} set for verification.
+                </div>
+              )}
+            </div>
+          )}
 
           <QuestionModal
             open={questionModalOpen}

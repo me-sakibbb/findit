@@ -26,9 +26,13 @@ export function useNavigation() {
   }, [supabase])
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/")
-    router.refresh()
+    try {
+      await supabase.auth.signOut()
+      router.push("/")
+      router.refresh()
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
   }
 
   const handleSearch = (e: React.FormEvent) => {

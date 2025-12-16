@@ -1,12 +1,17 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Send, Reply, X } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Loader2, Send, Reply, X, MoreVertical, ShieldCheck, User, Trash2, Ban } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useMessageThread } from "@/hooks/use-messages"
+import { ClaimDetailsModal } from "@/components/claim-details-modal"
+import { createBrowserClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 
 interface MessageThreadProps {
   userId: string
@@ -33,6 +38,49 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
     loadMoreMessages,
     handleSend,
   } = useMessageThread({ userId, threadId, itemId, recipientId })
+
+  const [claimModalOpen, setClaimModalOpen] = useState(false)
+  const [claimData, setClaimData] = useState<any>(null)
+  const [claimQuestions, setClaimQuestions] = useState<any[]>([])
+  const [loadingClaim, setLoadingClaim] = useState(false)
+
+  const handleViewClaim = async () => {
+    if (!item?.id || !recipient?.id) return
+
+    setLoadingClaim(true)
+    try {
+      const supabase = createBrowserClient()
+
+      // Fetch claim (get latest if multiple)
+      const { data: claim, error } = await supabase
+        .from("claims")
+        .select("*, claimant:profiles!claimant_id(full_name, email)")
+        .eq("item_id", item.id)
+        .eq("claimant_id", recipient.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single()
+
+      if (error) throw error
+
+      // Fetch questions
+      const { data: questions, error: qError } = await supabase
+        .from("questions")
+        .select("*")
+        .eq("item_id", item.id)
+
+      if (qError) throw qError
+
+      setClaimData(claim)
+      setClaimQuestions(questions || [])
+      setClaimModalOpen(true)
+    } catch (error) {
+      console.error("Error fetching claim:", error)
+      toast.error("Could not load claim details")
+    } finally {
+      setLoadingClaim(false)
+    }
+  }
 
   if (!threadId && !recipientId) {
     return (
@@ -73,22 +121,75 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
       .join("")
       .toUpperCase() || "?"
 
+  // Check if current user is the owner of the item discussed
+  // Check if current user is the owner of the item discussed
+  // Ensure we have both item_id and user_id before checking ownership
+  const isItemOwner = Boolean(item?.id && item?.user_id && userId && String(item.user_id) === String(userId))
+
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="border-b">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={recipient?.avatar_url || "/placeholder.svg"} />
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-          <div>
-            <CardTitle className="text-lg">{recipient?.full_name || "User"}</CardTitle>
-            {item && <p className="text-sm text-muted-foreground">Re: {item.title}</p>}
+      <CardHeader className="border-b py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={recipient?.avatar_url || "/placeholder.svg"} />
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle className="text-lg">{recipient?.full_name || "User"}</CardTitle>
+              {item && (
+                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
+                  {item.images && item.images[0] ? (
+                    <img src={item.images[0]} alt="Item" className="w-6 h-6 rounded object-cover" />
+                  ) : (
+                    <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center text-[10px]">IMG</div>
+                  )}
+                  <span className="truncate max-w-[150px]">{item.title}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isItemOwner && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-teal-600 border-teal-200 hover:bg-teal-50 hover:text-teal-700 gap-2"
+                onClick={handleViewClaim}
+                disabled={loadingClaim}
+              >
+                {loadingClaim ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                View Claim
+              </Button>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-5 w-5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  View Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive">
+                  <Ban className="mr-2 h-4 w-4" />
+                  Block User
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Chat
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent 
+      <CardContent
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[calc(100vh-400px)]"
         onScroll={(e) => {
@@ -116,7 +217,30 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
             {messages.map((msg) => {
               const isOwn = msg.sender_id === userId
               const repliedMsg = msg.reply_to_id ? messages.find(m => m.id === msg.reply_to_id) : null
-              
+              const isClaimMessage = msg.message_type === 'claim'
+
+              if (isClaimMessage) {
+                return (
+                  <div key={msg.id} className="flex justify-center my-4">
+                    <div className="bg-teal-50 border border-teal-100 rounded-lg p-3 max-w-sm text-center">
+                      <div className="flex items-center justify-center gap-2 mb-1 text-teal-700 font-medium">
+                        <ShieldCheck className="h-4 w-4" />
+                        <span>Claim Submitted</span>
+                      </div>
+                      <p className="text-sm text-teal-600/90">{isOwn ? "You submitted a claim for this item." : "User submitted a claim for this item."}</p>
+                      <p className="text-xs text-teal-600/70 mt-1">
+                        {new Date(msg.created_at).toLocaleTimeString("en-US", {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          month: "short",
+                          day: "numeric"
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                )
+              }
+
               return (
                 <div key={msg.id} className={cn("flex gap-2 group", isOwn ? "justify-end" : "justify-start")}>
                   {!isOwn && (
@@ -219,6 +343,13 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
           </Button>
         </div>
       </CardFooter>
+
+      <ClaimDetailsModal
+        open={claimModalOpen}
+        onOpenChange={setClaimModalOpen}
+        claim={claimData}
+        questions={claimQuestions}
+      />
     </Card>
   )
 }

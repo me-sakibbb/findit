@@ -41,7 +41,7 @@ export function useItemPost({ type }: UseItemPostProps) {
 
         toast.success("Category suggested!", { description: `AI suggests: ${result.category} (${Math.round(result.confidence * 100)}% confident)` })
       } else {
-        toast.error("AI Suggest unavailable", { description: "Add GOOGLE_GENERATIVE_AI_API_KEY to .env.local (free at aistudio.google.com)" })
+        toast.error("AI Suggest unavailable", { description: "Add GROQ_API_KEY to .env.local (free at console.groq.com)" })
       }
     } catch (error) {
       console.error("[Form] AI Suggest Error:", error)

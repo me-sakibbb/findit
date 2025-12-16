@@ -22,7 +22,10 @@ export interface Conversation {
     id: string
     title: string
     type: string
+    user_id: string
+    images?: string[]
   }
+  has_claim?: boolean
 }
 
 export interface Message {
@@ -36,6 +39,7 @@ export interface Message {
     full_name: string
     avatar_url?: string
   }
+  message_type?: string
 }
 
 const MESSAGES_PER_PAGE = 20
@@ -69,7 +73,7 @@ export function useMessageList(userId: string) {
       messages?.forEach((msg: any) => {
         const otherUserId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id
         const otherUser = msg.sender_id === userId ? msg.receiver : msg.sender
-        
+
         // Skip if we can't determine the other user
         if (!otherUser || !otherUser.id) {
           console.warn("Skipping message with missing user data:", msg.id)
@@ -95,7 +99,30 @@ export function useMessageList(userId: string) {
         }
       })
 
-      setConversations(Array.from(conversationMap.values()))
+      const convs = Array.from(conversationMap.values())
+
+      // Fetch claims for these conversations
+      if (convs.length > 0) {
+        const itemIds = convs.map(c => c.item?.id).filter(Boolean)
+
+        if (itemIds.length > 0) {
+          const { data: claims } = await supabase
+            .from("claims")
+            .select("item_id, claimant_id")
+            .in("item_id", itemIds)
+
+          if (claims) {
+            convs.forEach(conv => {
+              if (conv.item) {
+                const hasClaim = claims.some(c => c.item_id === conv.item.id && c.claimant_id === conv.other_user.id)
+                conv.has_claim = hasClaim
+              }
+            })
+          }
+        }
+      }
+
+      setConversations(convs)
     } catch (error) {
       console.error("Error processing conversations:", error)
     } finally {
@@ -309,7 +336,7 @@ export function useMessageThread({ userId, threadId, itemId, recipientId }: UseM
       // Load item if provided
       if (itemId) {
         const itemRes = await supabase.from("items").select("*").eq("id", itemId).single()
-        
+
         if (itemRes.error) {
           console.error("Error loading item:", itemRes.error.message)
         } else {
@@ -371,7 +398,7 @@ export function useMessageThread({ userId, threadId, itemId, recipientId }: UseM
         console.error("Error inserting message:", error)
         throw error
       }
-      
+
       setNewMessage("")
       setReplyingTo(null)
 
@@ -435,7 +462,7 @@ export function useMessageThread({ userId, threadId, itemId, recipientId }: UseM
         async (payload: any) => {
           console.log("🔔 Real-time: New message received:", payload.new)
           const newMsg = payload.new
-          
+
           // Only handle messages for this conversation
           const isForThisThread =
             (newMsg.sender_id === userId && newMsg.recipient_id === otherUserId) ||

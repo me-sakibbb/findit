@@ -88,7 +88,9 @@ export function ClaimModal({ open, onOpenChange, item }: ClaimModalProps) {
                     item_id: item.id,
                     claimant_id: user.id,
                     answers: answers,
-                    ai_verdict: aiResponse?.analysis || "No questions provided",
+                    ai_verdict: aiResponse?.confidence_percentage?.toString() || "0",
+                    ai_analysis: aiResponse?.analysis || "No analysis provided",
+                    ai_question_analysis: aiResponse?.question_analysis || {},
                     status: "pending",
                 })
                 .select()
@@ -115,7 +117,8 @@ export function ClaimModal({ open, onOpenChange, item }: ClaimModalProps) {
                     sender_id: user.id,
                     recipient_id: fullItem.user_id,
                     item_id: item.id,
-                    content: `I have claimed this item. ${aiResponse?.verdict === 'high_confidence' ? 'AI Verification: High Confidence match.' : ''}`,
+                    content: "I have claimed this item.",
+                    message_type: "claim",
                     is_read: false
                 })
 
