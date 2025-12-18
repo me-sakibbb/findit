@@ -10,6 +10,7 @@ import { toast } from "sonner"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { sendNotification } from "@/lib/notifications"
+import useAuth from "@/hooks/use-auth"
 
 interface Question {
     id: string
@@ -30,6 +31,7 @@ export function ClaimModal({ open, onOpenChange, item }: ClaimModalProps) {
     const [answers, setAnswers] = useState<Record<string, string>>({})
     const [submitting, setSubmitting] = useState(false)
     const router = useRouter()
+    const { getUserInfo } = useAuth()
 
     const handleAnswerChange = (questionId: string, value: string) => {
         setAnswers((prev) => ({
@@ -60,44 +62,36 @@ export function ClaimModal({ open, onOpenChange, item }: ClaimModalProps) {
                 return
             }
 
-            // 1. Verify with AI
-            let verdict = "pending"
-            let aiResponse = null
-
-            if (item.questions && item.questions.length > 0) {
-                const verifyRes = await fetch("/api/ai/verify-claim", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        itemId: item.id,
-                        itemTitle: item.title,
-                        questions: item.questions,
-                        answers,
-                    }),
-                })
-
-                if (verifyRes.ok) {
-                    aiResponse = await verifyRes.json()
-                    verdict = aiResponse.verdict
-                }
-            }
-
-            // 2. Create Claim
+            // 1. Create Claim immediately with default AI values
             const { data: claim, error: claimError } = await supabase
                 .from("claims")
                 .insert({
                     item_id: item.id,
                     claimant_id: user.id,
                     answers: answers,
-                    ai_verdict: aiResponse?.confidence_percentage?.toString() || "0",
-                    ai_analysis: aiResponse?.analysis || "No analysis provided",
-                    ai_question_analysis: aiResponse?.question_analysis || {},
+                    ai_verdict: "0",
+                    ai_analysis: "AI verification in progress...",
+                    ai_question_analysis: {},
                     status: "pending",
                 })
                 .select()
                 .single()
 
             if (claimError) throw claimError
+
+            // 2. Trigger AI verification asynchronously (fire-and-forget)
+            // Using void to explicitly ignore the promise and not block execution
+            if (item.questions && item.questions.length > 0) {
+                void supabase.functions.invoke('verify-claim-ai', {
+                    body: {
+                        claim_id: claim.id,
+                        item_id: item.id,
+                        questions: item.questions,
+                        answers
+                    }
+                })
+            }
+
 
             // 3. Create Message
             // First check if a conversation exists
@@ -125,12 +119,16 @@ export function ClaimModal({ open, onOpenChange, item }: ClaimModalProps) {
 
                 if (msgError) console.error("Error sending claim message:", msgError)
 
+                // Fetch claimer's profile for the name
+                const userProfile = await getUserInfo()
+                const claimerName = userProfile?.full_name || "Someone"
+
                 // Send notification to owner
                 await sendNotification({
                     userId: fullItem.user_id,
                     type: "claim",
                     title: "New Claim",
-                    message: `Someone claimed your item: ${item.title}`,
+                    message: `${claimerName} claimed your item: ${item.title}`,
                     link: `/items/${item.id}`,
                     metadata: { itemId: item.id, claimId: claim.id }
                 })

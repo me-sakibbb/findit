@@ -27,3 +27,6 @@ yarn-error.log*
 .vercel
 
 supabase/.temp
+
+.agent
+.continue

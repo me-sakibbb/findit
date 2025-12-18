@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Plus, MessageSquare, LogOut, User, Settings, Package, Users } from "lucide-react"
@@ -32,8 +33,9 @@ export function Navigation() {
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 py-2">
       <div className="container mx-auto px-4">
         <div className="flex items-center gap-4 md:gap-6 h-16">
-          <Link href="/" className="font-bold text-xl md:text-2xl hover:text-primary transition-colors shrink-0">
-            FindIt
+          <Link href="/" className="font-bold text-xl md:text-2xl hover:text-primary transition-colors shrink-0 flex items-center gap-2">
+            <Image src="/icon-black.svg" alt="FindIt" width={32} height={32} className="h-8 w-8 mr-2 mt-1" />
+            <span>FindIt</span>
           </Link>
 
           <div className="flex items-center gap-3 ml-auto">
