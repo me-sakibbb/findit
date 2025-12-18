@@ -89,13 +89,25 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <Avatar>
-                        <AvatarImage src={conv.other_user.avatar_url || "/placeholder.svg"} />
-                        <AvatarFallback>{initials}</AvatarFallback>
-                      </Avatar>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={conv.other_user.avatar_url || "/placeholder.svg"} />
+                          <AvatarFallback>{initials}</AvatarFallback>
+                        </Avatar>
+                        {conv.item && conv.item.image_url && (
+                          <>
+                            <div className="h-3 w-3 rounded-full bg-teal-100 flex items-center justify-center">
+                              <div className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                            </div>
+                            <div className="h-12 w-12 rounded-lg border-2 border-teal-100 overflow-hidden bg-white shadow-sm">
+                              <img src={conv.item.image_url} alt="Item" className="w-full h-full object-cover" />
+                            </div>
+                          </>
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start mb-1">
-                          <div className="flex items-center gap-1 min-w-0">
+                          <div className="flex items-center gap-1.5 min-w-0">
                             <h4 className="font-semibold truncate">{conv.other_user.full_name}</h4>
                             {conv.has_claim && (
                               <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
@@ -106,11 +118,11 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
                           </span>
                         </div>
                         {conv.item && (
-                          <div className="flex items-center gap-1 mb-1">
-                            <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-100">
                               {conv.item.type === "lost" ? "Lost" : "Found"}
                             </Badge>
-                            <span className="text-xs text-muted-foreground truncate">{conv.item.title}</span>
+                            <span className="text-xs text-teal-700 font-medium truncate">{conv.item.title}</span>
                           </div>
                         )}
                         <div className="flex justify-between items-center">

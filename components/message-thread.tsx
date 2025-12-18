@@ -128,23 +128,34 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="border-b py-3">
+      <CardHeader className="border-b py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={recipient?.avatar_url || "/placeholder.svg"} />
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-            <div>
+          <div className="flex items-center gap-4">
+            {/* Avatar section with item indicator */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Avatar className="h-14 w-14">
+                <AvatarImage src={recipient?.avatar_url || "/placeholder.svg"} />
+                <AvatarFallback className="text-base">{initials}</AvatarFallback>
+              </Avatar>
+              {item && item.image_url && (
+                <>
+                  <div className="h-4 w-4 rounded-full bg-teal-100 flex items-center justify-center">
+                    <div className="h-2 w-2 rounded-full bg-teal-500" />
+                  </div>
+                  <div className="h-14 w-14 rounded-lg border-2 border-teal-100 overflow-hidden bg-white shadow-md">
+                    <img src={item.image_url} alt="Item" className="w-full h-full object-cover" />
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="flex-1">
               <CardTitle className="text-lg">{recipient?.full_name || "User"}</CardTitle>
               {item && (
-                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
-                  {item.images && item.images[0] ? (
-                    <img src={item.images[0]} alt="Item" className="w-6 h-6 rounded object-cover" />
-                  ) : (
-                    <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center text-[10px]">IMG</div>
-                  )}
-                  <span className="truncate max-w-[150px]">{item.title}</span>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 px-2.5 py-1 rounded-full">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                    <span className="font-medium text-teal-700 truncate max-w-[200px]">{item.title}</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -244,10 +255,22 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
               return (
                 <div key={msg.id} className={cn("flex gap-2 group", isOwn ? "justify-end" : "justify-start")}>
                   {!isOwn && (
-                    <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={msg.sender?.avatar_url || recipient?.avatar_url || "/placeholder.svg"} />
-                      <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-                    </Avatar>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={msg.sender?.avatar_url || recipient?.avatar_url || "/placeholder.svg"} />
+                        <AvatarFallback className="text-sm">{initials}</AvatarFallback>
+                      </Avatar>
+                      {item && item.image_url && (
+                        <>
+                          <div className="h-2.5 w-2.5 rounded-full bg-teal-100 flex items-center justify-center">
+                            <div className="h-1 w-1 rounded-full bg-teal-500" />
+                          </div>
+                          <div className="h-10 w-10 rounded-md border-2 border-teal-100 overflow-hidden bg-white shadow-sm">
+                            <img src={item.image_url} alt="Item" className="w-full h-full object-cover" />
+                          </div>
+                        </>
+                      )}
+                    </div>
                   )}
                   <div className={cn("flex flex-col gap-1", isOwn ? "items-end" : "items-start")}>
                     <div
@@ -290,9 +313,21 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
                     )}
                   </div>
                   {isOwn && (
-                    <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarFallback className="text-xs">You</AvatarFallback>
-                    </Avatar>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {item && item.image_url && (
+                        <>
+                          <div className="h-10 w-10 rounded-md border-2 border-teal-100 overflow-hidden bg-white shadow-sm">
+                            <img src={item.image_url} alt="Item" className="w-full h-full object-cover" />
+                          </div>
+                          <div className="h-2.5 w-2.5 rounded-full bg-teal-100 flex items-center justify-center">
+                            <div className="h-1 w-1 rounded-full bg-teal-500" />
+                          </div>
+                        </>
+                      )}
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="text-sm">You</AvatarFallback>
+                      </Avatar>
+                    </div>
                   )}
                 </div>
               )

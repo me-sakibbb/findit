@@ -23,7 +23,7 @@ export interface Conversation {
     title: string
     type: string
     user_id: string
-    images?: string[]
+    image_url?: string | null
   }
   has_claim?: boolean
 }
