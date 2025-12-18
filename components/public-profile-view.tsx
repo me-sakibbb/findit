@@ -2,26 +2,20 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ItemCard } from "@/components/item-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { 
-  MessageSquare, 
-  Calendar, 
-  Package, 
-  CheckCircle, 
-  MapPin, 
-  Phone,
-  Mail,
-  User,
+import {
+  MessageSquare,
+  Calendar,
+  Package,
+  CheckCircle,
+  MapPin,
   TrendingUp,
   Award,
   Clock
 } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
 
 interface PublicProfileViewProps {
   profile: {
@@ -62,33 +56,20 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
       .toUpperCase() || "?"
 
   const isOwnProfile = currentUserId === profile.id
-  const activeItems = items.filter((item) => item.is_active)
-  const resolvedItems = items.filter((item) => !item.is_active)
-  
+
   // Calculate success rate
-  const successRate = stats.totalItems > 0 
-    ? Math.round((stats.resolvedItems / stats.totalItems) * 100) 
+  const successRate = stats.totalItems > 0
+    ? Math.round((stats.resolvedItems / stats.totalItems) * 100)
     : 0
 
   // Get user location from profile or fallback to recent item location
-  const userLocation = profile.city && profile.state 
-    ? `${profile.city}, ${profile.state}` 
-    : items.length > 0 && items[0].city && items[0].state 
-      ? `${items[0].city}, ${items[0].state}` 
-      : items.length > 0 
-        ? items[0].location 
+  const userLocation = profile.city && profile.state
+    ? `${profile.city}, ${profile.state}`
+    : items.length > 0 && items[0].city && items[0].state
+      ? `${items[0].city}, ${items[0].state}`
+      : items.length > 0
+        ? items[0].location
         : null
-
-  // Debug logging
-  if (typeof window !== 'undefined') {
-    console.log('Profile Data:', {
-      id: profile.id,
-      name: profile.full_name,
-      avatar: profile.avatar_url,
-      currentUserId,
-      isOwnProfile
-    })
-  }
 
   return (
     <div className="space-y-6">
@@ -117,7 +98,7 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
                   </Badge>
                 )}
               </div>
-              
+
               {profile.bio && (
                 <p className="text-muted-foreground mb-4 max-w-2xl leading-relaxed">{profile.bio}</p>
               )}
@@ -132,7 +113,7 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
                     })}
                   </span>
                 </div>
-                
+
                 {userLocation && (
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -189,7 +170,7 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="hover:shadow-lg transition-shadow">
           <CardContent className="pt-6">
             <div className="text-center">
@@ -251,7 +232,7 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
                   <p className="text-sm text-muted-foreground">{stats.activeItems} items currently active</p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                 <CheckCircle className="h-5 w-5 mt-0.5 text-green-600" />
                 <div>
@@ -314,8 +295,8 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
                 <span className="text-sm text-muted-foreground">{stats.lostItems}</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
-                <div 
-                  className="bg-red-500 h-2 rounded-full transition-all" 
+                <div
+                  className="bg-red-500 h-2 rounded-full transition-all"
                   style={{ width: `${stats.totalItems > 0 ? (stats.lostItems / stats.totalItems) * 100 : 0}%` }}
                 />
               </div>
@@ -327,8 +308,8 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
                 <span className="text-sm text-muted-foreground">{stats.foundItems}</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
-                <div 
-                  className="bg-blue-500 h-2 rounded-full transition-all" 
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all"
                   style={{ width: `${stats.totalItems > 0 ? (stats.foundItems / stats.totalItems) * 100 : 0}%` }}
                 />
               </div>
@@ -340,8 +321,8 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
                 <span className="text-sm text-muted-foreground">{successRate}%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
-                <div 
-                  className="bg-green-500 h-2 rounded-full transition-all" 
+                <div
+                  className="bg-green-500 h-2 rounded-full transition-all"
                   style={{ width: `${successRate}%` }}
                 />
               </div>
@@ -349,82 +330,6 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
           </CardContent>
         </Card>
       </div>
-
-      {/* Items Tabs */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            {profile.full_name}'s Listings
-          </CardTitle>
-          <CardDescription>Browse all items posted by {profile.full_name}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="active" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="active" className="gap-2">
-                <Package className="h-4 w-4" />
-                Active ({stats.activeItems})
-              </TabsTrigger>
-              <TabsTrigger value="resolved" className="gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Resolved ({stats.resolvedItems})
-              </TabsTrigger>
-              <TabsTrigger value="all" className="gap-2">
-                All ({stats.totalItems})
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="active" className="mt-6">
-              {activeItems.length > 0 ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {activeItems.map((item: any) => (
-                    <ItemCard key={item.id} item={item} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16">
-                  <Package className="h-20 w-20 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">No Active Items</h3>
-                  <p className="text-muted-foreground">This user doesn't have any active listings right now.</p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="resolved" className="mt-6">
-              {resolvedItems.length > 0 ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {resolvedItems.map((item: any) => (
-                    <ItemCard key={item.id} item={item} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16">
-                  <CheckCircle className="h-20 w-20 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">No Resolved Items</h3>
-                  <p className="text-muted-foreground">This user hasn't resolved any items yet.</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="all" className="mt-6">
-              {items.length > 0 ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {items.map((item: any) => (
-                    <ItemCard key={item.id} item={item} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16">
-                  <Package className="h-20 w-20 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">No Items Yet</h3>
-                  <p className="text-muted-foreground">This user hasn't posted any items.</p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
     </div>
   )
 }

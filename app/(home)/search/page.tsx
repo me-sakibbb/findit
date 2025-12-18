@@ -1,6 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server"
 import { SearchFilters } from "@/components/search-filters"
 import { ItemCard } from "@/components/item-card"
+import { PaginatedItemList } from "@/components/paginated-item-list"
 
 import { Package } from "lucide-react"
 
@@ -94,30 +95,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </aside>
 
         <div>
-          {filteredItems && filteredItems.length > 0 ? (
-            <>
-              <div className="mb-6 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Showing <span className="font-semibold text-foreground">{filteredItems.length}</span> item(s)
-                </p>
-              </div>
-              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredItems.map((item) => (
-                  <ItemCard key={item.id} item={item} />
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center">
-              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
-                <Package className="w-10 h-10 text-muted-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No items found</h3>
-              <p className="text-muted-foreground max-w-md">
-                No items matched your search criteria. Try adjusting your filters.
-              </p>
-            </div>
-          )}
+          <PaginatedItemList
+            initialItems={filteredItems as any[]}
+            filters={{
+              status: params.type as any,
+              category: params.category,
+              search: params.q,
+              userId: params.userId
+            }}
+          />
         </div>
       </div>
     </div>

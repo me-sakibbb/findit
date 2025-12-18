@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { createServerClient } from "@/lib/supabase/server"
 import { PublicProfileView } from "@/components/public-profile-view"
 import { ProfileEditModal } from "@/components/profile-edit-modal"
+import { PaginatedItemList } from "@/components/paginated-item-list"
 
 interface ProfilePageProps {
   searchParams: Promise<{
@@ -34,7 +35,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       .order("created_at", { ascending: false })
 
     const allItems = items || []
-    
+
     // Calculate statistics
     const stats = {
       totalItems: allItems.length,
@@ -58,13 +59,23 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
     return (
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <PublicProfileView 
-          profile={profile} 
+        <PublicProfileView
+          profile={profile}
           currentUserId={user?.id}
           items={allItems}
           stats={stats}
           recentActivity={recentActivity}
         />
+
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-6">Posted Items</h2>
+          <PaginatedItemList
+            initialItems={allItems as any[]}
+            filters={{
+              userId: profile.id
+            }}
+          />
+        </div>
       </div>
     )
   }
@@ -84,7 +95,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     .order("created_at", { ascending: false })
 
   const allItems = items || []
-  
+
   // Calculate statistics
   const stats = {
     totalItems: allItems.length,
@@ -108,14 +119,24 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <PublicProfileView 
-        profile={profile} 
+      <PublicProfileView
+        profile={profile}
         currentUserId={user.id}
         items={allItems}
         stats={stats}
         recentActivity={recentActivity}
         editButton={<ProfileEditModal profile={profile} />}
       />
+
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold mb-6">My Items</h2>
+        <PaginatedItemList
+          initialItems={allItems as any[]}
+          filters={{
+            userId: user.id
+          }}
+        />
+      </div>
     </div>
   )
 }

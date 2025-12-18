@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useNavigation } from "@/hooks/use-navigation"
+import { NotificationBell } from "@/components/notification-bell"
 
 export function Navigation() {
   const {
@@ -110,6 +111,7 @@ export function Navigation() {
                       <span className="hidden sm:inline">Post Item</span>
                     </Link>
                   </Button>
+                  <NotificationBell userId={user.id} />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="relative h-8 w-8 rounded-full">

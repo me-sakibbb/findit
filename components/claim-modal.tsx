@@ -9,6 +9,7 @@ import { Loader2, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { sendNotification } from "@/lib/notifications"
 
 interface Question {
     id: string
@@ -123,6 +124,16 @@ export function ClaimModal({ open, onOpenChange, item }: ClaimModalProps) {
                 })
 
                 if (msgError) console.error("Error sending claim message:", msgError)
+
+                // Send notification to owner
+                await sendNotification({
+                    userId: fullItem.user_id,
+                    type: "claim",
+                    title: "New Claim",
+                    message: `Someone claimed your item: ${item.title}`,
+                    link: `/items/${item.id}`,
+                    metadata: { itemId: item.id, claimId: claim.id }
+                })
             }
 
             toast.success("Claim submitted", { description: "The owner has been notified." })

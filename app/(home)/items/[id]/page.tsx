@@ -74,7 +74,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
 
   return (
     <div className="min-h-svh bg-background pb-20">
-      {/* Navigation Bar Placeholder (if global nav doesn't cover it, adding a back button here is safe) */}
+      {/* Navigation Bar Placeholder */}
       <div className="container mx-auto px-4 py-4 max-w-6xl">
         <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground hover:text-foreground">
           <Link href="/search">
@@ -196,7 +196,10 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
 
             {/* Comments */}
             <section>
-              <ItemComments itemId={item.id} currentUserId={user?.id || null} />
+              <div className="mt-8">
+                <h2 className="text-2xl font-bold mb-4">Comments</h2>
+                <ItemComments itemId={item.id} itemOwnerId={item.user_id} currentUserId={user?.id || null} />
+              </div>
             </section>
 
           </div>
@@ -246,24 +249,22 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
               </div>
 
             </div>
-          </div >
+          </div>
 
-        </div >
+        </div>
 
         {/* Similar Items */}
-        {
-          similarItems && similarItems.length > 0 && (
-            <div className="mt-20 pt-10 border-t">
-              <h2 className="text-2xl font-bold mb-8">Similar items nearby</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {similarItems.map((similarItem) => (
-                  <ItemCard key={similarItem.id} item={similarItem} />
-                ))}
-              </div>
+        {similarItems && similarItems.length > 0 && (
+          <div className="mt-20 pt-10 border-t">
+            <h2 className="text-2xl font-bold mb-8">Similar items nearby</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {similarItems.map((similarItem) => (
+                <ItemCard key={similarItem.id} item={similarItem} />
+              ))}
             </div>
-          )
-        }
-      </main >
-    </div >
+          </div>
+        )}
+      </main>
+    </div>
   )
 }
