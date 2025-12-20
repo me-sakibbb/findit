@@ -11,6 +11,7 @@ import { ItemCard } from "@/components/item-card"
 import { MapWrapper } from "@/components/map-wrapper"
 import { ItemComments } from "@/components/item-comments"
 import { Separator } from "@/components/ui/separator"
+import { PotentialMatches } from "@/components/potential-matches"
 
 interface ItemDetailPageProps {
   params: Promise<{ id: string }>
@@ -105,6 +106,11 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
               Posted {new Date(item.created_at).toLocaleDateString()}
             </span>
           </div>
+        </div>
+
+        {/* Potential Matches - High Visibility */}
+        <div className="mb-8">
+          <PotentialMatches itemId={item.id} itemStatus={item.status} />
         </div>
 
         {/* Hero Image */}
@@ -228,6 +234,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                   />
                 </CardContent>
               </Card>
+
 
               {/* Safety Tips */}
               <div className="rounded-xl border bg-card p-5 shadow-sm">

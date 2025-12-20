@@ -212,6 +212,11 @@ export function useItemPost({ type }: UseItemPostProps) {
         }
       }
 
+      // Trigger AI matching (fire-and-forget)
+      void supabase.functions.invoke('find-potential-matches', {
+        body: { item_id: newItem.id }
+      })
+
       toast.success("Item posted!", { description: `Your ${type} item has been posted successfully.` })
 
       router.push("/profile")
