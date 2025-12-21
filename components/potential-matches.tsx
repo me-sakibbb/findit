@@ -110,7 +110,7 @@ export function PotentialMatches({ itemId, itemStatus, currentUserId, itemOwnerI
 
                                 <div className="flex gap-4">
                                     {/* Image */}
-                                    <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                                    <Link href={`/items/${matchedItem.id}`} className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 hover:opacity-90 transition-opacity">
                                         {matchedItem.image_url ? (
                                             <img
                                                 src={matchedItem.image_url}
@@ -122,7 +122,7 @@ export function PotentialMatches({ itemId, itemStatus, currentUserId, itemOwnerI
                                                 No image
                                             </div>
                                         )}
-                                    </div>
+                                    </Link>
 
                                     {/* Content */}
                                     <div className="flex-1 min-w-0">
@@ -146,7 +146,9 @@ export function PotentialMatches({ itemId, itemStatus, currentUserId, itemOwnerI
                                             </Badge>
                                         </div>
 
-                                        <h4 className="font-semibold text-base mb-1 truncate pr-8">{matchedItem.title}</h4>
+                                        <Link href={`/items/${matchedItem.id}`} className="hover:text-primary transition-colors">
+                                            <h4 className="font-semibold text-base mb-1 truncate pr-8">{matchedItem.title}</h4>
+                                        </Link>
 
                                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                                             <span className="flex items-center gap-1">
@@ -172,13 +174,13 @@ export function PotentialMatches({ itemId, itemStatus, currentUserId, itemOwnerI
 
                                         {/* Actions */}
                                         <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-border/50">
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+                                            <Link href={`/profile?id=${matchedItem.user_id}`} className="flex items-center gap-2 text-xs text-muted-foreground min-w-0 hover:text-primary transition-colors">
                                                 <Avatar className="h-6 w-6 shrink-0">
                                                     <AvatarImage src={matchedItem.profiles?.avatar_url || undefined} />
                                                     <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
                                                 </Avatar>
                                                 <span className="truncate">{matchedItem.profiles?.full_name || "Anonymous"}</span>
-                                            </div>
+                                            </Link>
                                             <div className="flex items-center gap-2 shrink-0">
                                                 <Button variant="outline" size="sm" className="h-8 px-3 text-xs" asChild>
                                                     <Link href={`/items/${matchedItem.id}`}>

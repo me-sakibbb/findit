@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Badge } from "@/components/ui/badge"
 import { ShieldCheck, ShieldAlert, ShieldQuestion, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
+import Link from "next/link"
 
 interface Question {
     id: string
@@ -16,6 +17,7 @@ interface ClaimDetailsModalProps {
     onOpenChange: (open: boolean) => void
     claim: {
         id: string
+        claimant_id?: string
         answers: Record<string, string>
         ai_verdict: string
         ai_analysis?: string
@@ -66,7 +68,13 @@ export function ClaimDetailsModal({ open, onOpenChange, claim, questions }: Clai
                 <DialogHeader className="p-6 pb-3 shrink-0 pr-10">
                     <DialogTitle className="text-xl">Claim Verification</DialogTitle>
                     <DialogDescription className="mt-1">
-                        AI-powered analysis of answers from <span className="font-medium text-foreground">{claim.claimant?.full_name || "the claimant"}</span>
+                        AI-powered analysis of answers from {claim.claimant_id ? (
+                            <Link href={`/profile?id=${claim.claimant_id}`} className="font-medium text-foreground hover:text-primary transition-colors underline">
+                                {claim.claimant?.full_name || "the claimant"}
+                            </Link>
+                        ) : (
+                            <span className="font-medium text-foreground">{claim.claimant?.full_name || "the claimant"}</span>
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -106,21 +114,21 @@ export function ClaimDetailsModal({ open, onOpenChange, claim, questions }: Clai
 
                             return (
                                 <div key={q.id} className={`rounded-xl border-2 overflow-hidden ${isCorrect ? "border-green-200 bg-green-50/30" :
-                                        isIncorrect ? "border-red-200 bg-red-50/30" :
-                                            analysis ? "border-yellow-200 bg-yellow-50/30" :
-                                                "border-gray-200 bg-gray-50/30"
+                                    isIncorrect ? "border-red-200 bg-red-50/30" :
+                                        analysis ? "border-yellow-200 bg-yellow-50/30" :
+                                            "border-gray-200 bg-gray-50/30"
                                     }`}>
                                     {/* Question Header */}
                                     <div className={`px-4 py-3 flex items-center justify-between ${isCorrect ? "bg-green-100/50" :
-                                            isIncorrect ? "bg-red-100/50" :
-                                                analysis ? "bg-yellow-100/50" :
-                                                    "bg-gray-100/50"
+                                        isIncorrect ? "bg-red-100/50" :
+                                            analysis ? "bg-yellow-100/50" :
+                                                "bg-gray-100/50"
                                         }`}>
                                         <p className="font-medium text-sm">Q{i + 1}: {q.question_text}</p>
                                         {analysis && (
                                             <Badge variant="outline" className={`gap-1 ${isCorrect ? "bg-green-100 text-green-700 border-green-300" :
-                                                    isIncorrect ? "bg-red-100 text-red-700 border-red-300" :
-                                                        "bg-yellow-100 text-yellow-700 border-yellow-300"
+                                                isIncorrect ? "bg-red-100 text-red-700 border-red-300" :
+                                                    "bg-yellow-100 text-yellow-700 border-yellow-300"
                                                 }`}>
                                                 {getStatusIcon(analysis.status)}
                                                 {analysis.status}
@@ -133,9 +141,9 @@ export function ClaimDetailsModal({ open, onOpenChange, claim, questions }: Clai
                                         <div>
                                             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Claimant's Answer</span>
                                             <div className={`mt-1.5 p-3 rounded-lg text-sm ${isCorrect ? "bg-green-100 text-green-900" :
-                                                    isIncorrect ? "bg-red-100 text-red-900" :
-                                                        analysis ? "bg-yellow-100 text-yellow-900" :
-                                                            "bg-white border"
+                                                isIncorrect ? "bg-red-100 text-red-900" :
+                                                    analysis ? "bg-yellow-100 text-yellow-900" :
+                                                        "bg-white border"
                                                 }`}>
                                                 {claim.answers[q.id] || <span className="text-muted-foreground italic">No answer provided</span>}
                                             </div>
@@ -144,8 +152,8 @@ export function ClaimDetailsModal({ open, onOpenChange, claim, questions }: Clai
                                         {/* AI Analysis Note */}
                                         {analysis?.explanation && (
                                             <div className={`flex gap-2 text-xs p-2.5 rounded-lg ${isCorrect ? "bg-green-50 text-green-700" :
-                                                    isIncorrect ? "bg-red-50 text-red-700" :
-                                                        "bg-yellow-50 text-yellow-700"
+                                                isIncorrect ? "bg-red-50 text-red-700" :
+                                                    "bg-yellow-50 text-yellow-700"
                                                 }`}>
                                                 <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0" />
                                                 <p><span className="font-semibold">AI Analysis:</span> {analysis.explanation}</p>

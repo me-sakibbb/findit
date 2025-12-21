@@ -47,11 +47,13 @@ export function PotentialMatchCard({ match }: PotentialMatchCardProps) {
     <Card>
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row items-start gap-6">
-          <img
-            src={imageUrl || "/placeholder.svg"}
-            alt={match.matched_item.title}
-            className="w-full md:w-48 h-40 md:h-32 object-cover rounded-lg shrink-0"
-          />
+          <Link href={`/items/${match.matched_item.id}`} className="block shrink-0">
+            <img
+              src={imageUrl || "/placeholder.svg"}
+              alt={match.matched_item.title}
+              className="w-full md:w-48 h-40 md:h-32 object-cover rounded-lg hover:opacity-90 transition-opacity"
+            />
+          </Link>
 
           <div className="flex-1 min-w-0 w-full">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
@@ -65,7 +67,9 @@ export function PotentialMatchCard({ match }: PotentialMatchCardProps) {
                     {match.matched_item.type === "lost" ? "Lost" : "Found"}
                   </Badge>
                 </div>
-                <h3 className="font-semibold text-xl mb-1">{match.matched_item.title}</h3>
+                <Link href={`/items/${match.matched_item.id}`} className="hover:text-primary transition-colors">
+                  <h3 className="font-semibold text-xl mb-1">{match.matched_item.title}</h3>
+                </Link>
                 <p className="text-sm text-muted-foreground mb-2">
                   Potential match for: <span className="font-medium">{match.item.title}</span>
                 </p>
@@ -98,15 +102,15 @@ export function PotentialMatchCard({ match }: PotentialMatchCardProps) {
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
+              <Link href={`/profile?id=${match.matched_item.user_id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={match.matched_item.profiles?.avatar_url || "/placeholder.svg"} />
                   <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   {match.matched_item.profiles?.full_name || "Anonymous"}
                 </span>
-              </div>
+              </Link>
 
               <div className="flex gap-3 w-full sm:w-auto">
                 <Button variant="outline" size="sm" className="flex-1 sm:flex-none" asChild>

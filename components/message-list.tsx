@@ -90,18 +90,28 @@ export function MessageList({ userId, activeThreadId }: MessageListProps) {
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <div className="flex items-center gap-1 shrink-0">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={conv.other_user.avatar_url || "/placeholder.svg"} />
-                          <AvatarFallback>{initials}</AvatarFallback>
-                        </Avatar>
+                        <Link
+                          href={`/profile?id=${conv.other_user.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Avatar className="h-12 w-12 hover:ring-2 hover:ring-primary/50 transition-all">
+                            <AvatarImage src={conv.other_user.avatar_url || "/placeholder.svg"} />
+                            <AvatarFallback>{initials}</AvatarFallback>
+                          </Avatar>
+                        </Link>
                         {conv.item && conv.item.image_url && (
                           <>
                             <div className="h-3 w-3 rounded-full bg-teal-100 flex items-center justify-center">
                               <div className="h-1.5 w-1.5 rounded-full bg-teal-500" />
                             </div>
-                            <div className="h-12 w-12 rounded-lg border-2 border-teal-100 overflow-hidden bg-white shadow-sm">
-                              <img src={conv.item.image_url} alt="Item" className="w-full h-full object-cover" />
-                            </div>
+                            <Link
+                              href={`/items/${conv.item.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="h-12 w-12 rounded-lg border-2 border-teal-100 overflow-hidden bg-white shadow-sm hover:ring-2 hover:ring-primary/50 transition-all">
+                                <img src={conv.item.image_url} alt="Item" className="w-full h-full object-cover" />
+                              </div>
+                            </Link>
                           </>
                         )}
                       </div>

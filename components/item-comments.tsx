@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Loader2, Send, Trash2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { useComments } from "@/hooks/use-comments"
+import Link from "next/link"
 
 interface ItemCommentsProps {
     itemId: string
@@ -66,14 +67,18 @@ export function ItemComments({ itemId, itemOwnerId, currentUserId }: ItemComment
                     <>
                         {comments.map((comment) => (
                             <div key={comment.id} className="flex gap-4 p-4 bg-muted/30 rounded-lg group">
-                                <Avatar className="h-10 w-10 border">
-                                    <AvatarImage src={comment.profiles?.avatar_url} />
-                                    <AvatarFallback>{comment.profiles?.full_name?.[0] || "?"}</AvatarFallback>
-                                </Avatar>
+                                <Link href={`/profile?id=${comment.user_id}`}>
+                                    <Avatar className="h-10 w-10 border hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
+                                        <AvatarImage src={comment.profiles?.avatar_url} />
+                                        <AvatarFallback>{comment.profiles?.full_name?.[0] || "?"}</AvatarFallback>
+                                    </Avatar>
+                                </Link>
                                 <div className="flex-1 space-y-1">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-sm">{comment.profiles?.full_name || "Unknown User"}</span>
+                                            <Link href={`/profile?id=${comment.user_id}`} className="hover:text-primary transition-colors">
+                                                <span className="font-semibold text-sm">{comment.profiles?.full_name || "Unknown User"}</span>
+                                            </Link>
                                             <span className="text-xs text-muted-foreground">
                                                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                                             </span>

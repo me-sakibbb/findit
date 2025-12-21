@@ -12,6 +12,7 @@ import { useMessageThread } from "@/hooks/use-messages"
 import { ClaimDetailsModal } from "@/components/claim-details-modal"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
+import Link from "next/link"
 
 interface MessageThreadProps {
   userId: string
@@ -133,29 +134,35 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
           <div className="flex items-center gap-4">
             {/* Avatar section with item indicator */}
             <div className="flex items-center gap-1.5 shrink-0">
-              <Avatar className="h-14 w-14">
-                <AvatarImage src={recipient?.avatar_url || "/placeholder.svg"} />
-                <AvatarFallback className="text-base">{initials}</AvatarFallback>
-              </Avatar>
+              <Link href={`/profile?id=${recipient?.id}`}>
+                <Avatar className="h-14 w-14 hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
+                  <AvatarImage src={recipient?.avatar_url || "/placeholder.svg"} />
+                  <AvatarFallback className="text-base">{initials}</AvatarFallback>
+                </Avatar>
+              </Link>
               {item && item.image_url && (
                 <>
                   <div className="h-4 w-4 rounded-full bg-teal-100 flex items-center justify-center">
                     <div className="h-2 w-2 rounded-full bg-teal-500" />
                   </div>
-                  <div className="h-14 w-14 rounded-lg border-2 border-teal-100 overflow-hidden bg-white shadow-md">
-                    <img src={item.image_url} alt="Item" className="w-full h-full object-cover" />
-                  </div>
+                  <Link href={`/items/${item.id}`}>
+                    <div className="h-14 w-14 rounded-lg border-2 border-teal-100 overflow-hidden bg-white shadow-md hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
+                      <img src={item.image_url} alt="Item" className="w-full h-full object-cover" />
+                    </div>
+                  </Link>
                 </>
               )}
             </div>
             <div className="flex-1">
-              <CardTitle className="text-lg">{recipient?.full_name || "User"}</CardTitle>
+              <Link href={`/profile?id=${recipient?.id}`} className="hover:text-primary transition-colors">
+                <CardTitle className="text-lg">{recipient?.full_name || "User"}</CardTitle>
+              </Link>
               {item && (
                 <div className="flex items-center gap-2 mt-1.5">
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 px-2.5 py-1 rounded-full">
+                  <Link href={`/items/${item.id}`} className="flex items-center gap-1.5 text-sm text-muted-foreground bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 px-2.5 py-1 rounded-full hover:border-primary/50 transition-colors">
                     <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
                     <span className="font-medium text-teal-700 truncate max-w-[200px]">{item.title}</span>
-                  </div>
+                  </Link>
                 </div>
               )}
             </div>
@@ -182,9 +189,11 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  View Profile
+                <DropdownMenuItem asChild>
+                  <Link href={`/profile?id=${recipient?.id}`}>
+                    <User className="mr-2 h-4 w-4" />
+                    View Profile
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-destructive">
                   <Ban className="mr-2 h-4 w-4" />

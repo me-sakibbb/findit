@@ -153,12 +153,16 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
             {/* Posted By */}
             <div className="flex items-center justify-between pb-8 border-b">
               <div className="flex items-center gap-4">
-                <Avatar className="h-14 w-14 border-2 border-background shadow-sm">
-                  <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} />
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
+                <Link href={`/profile?id=${item.user_id}`}>
+                  <Avatar className="h-14 w-14 border-2 border-background shadow-sm hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
+                    <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div>
-                  <p className="font-semibold text-lg">Posted by {profile?.full_name || "FindIt User"}</p>
+                  <Link href={`/profile?id=${item.user_id}`} className="hover:text-primary transition-colors">
+                    <p className="font-semibold text-lg">Posted by {profile?.full_name || "FindIt User"}</p>
+                  </Link>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-sm text-muted-foreground">Member since {new Date(item.created_at).getFullYear()}</p>
                     {profile?.trust_score !== undefined && (

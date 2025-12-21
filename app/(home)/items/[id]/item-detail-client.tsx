@@ -176,15 +176,70 @@ export function ItemDetailClient({ item, viewerUserId, isOwner, questions, claim
               )}
 
               {claims.length > 0 && (
-                <div className="grid gap-2 mt-2">
-                  <p className="text-sm text-muted-foreground">You have {claims.length} claim(s) on this item.</p>
-                  <div className="grid gap-2">
-                    {claims.slice(0, 3).map((c) => (
-                      <Button key={c.id} variant="outline" className="justify-between" onClick={() => openClaimDetails(c)}>
-                        <span className="truncate">{c.claimant?.full_name || "Claimant"}</span>
-                        <span className="text-xs text-muted-foreground">{c.ai_verdict ? `${c.ai_verdict}%` : "—"}</span>
+                <div className="space-y-3 mt-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Claims ({claims.length})</p>
+                    {claims.length > 3 && (
+                      <Button variant="link" size="sm" className="h-auto p-0 text-xs">
+                        View all
                       </Button>
-                    ))}
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {claims.slice(0, 3).map((c) => {
+                      const matchPercentage = c.ai_verdict ? parseInt(c.ai_verdict) : 0
+                      const getMatchColor = (percentage: number) => {
+                        if (percentage >= 80) return "text-green-600 bg-green-50 border-green-200"
+                        if (percentage >= 60) return "text-yellow-600 bg-yellow-50 border-yellow-200"
+                        return "text-red-600 bg-red-50 border-red-200"
+                      }
+                      const getProgressColor = (percentage: number) => {
+                        if (percentage >= 80) return "bg-green-500"
+                        if (percentage >= 60) return "bg-yellow-500"
+                        return "bg-red-500"
+                      }
+
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => openClaimDetails(c)}
+                          className="w-full text-left border rounded-lg p-3 hover:bg-accent/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            {/* Avatar */}
+                            <div className="relative">
+                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                                {(c.claimant?.full_name || "?").charAt(0).toUpperCase()}
+                              </div>
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">
+                                {c.claimant?.full_name || "Anonymous Claimant"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(c.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+
+                            {/* Match Percentage */}
+                            <div className="flex flex-col items-end gap-1">
+                              <div className={`px-2 py-0.5 rounded-full border text-xs font-bold ${getMatchColor(matchPercentage)}`}>
+                                {matchPercentage}%
+                              </div>
+                              {/* Progress bar */}
+                              <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full ${getProgressColor(matchPercentage)} transition-all`}
+                                  style={{ width: `${matchPercentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )}
