@@ -30,6 +30,8 @@ interface ItemCardProps {
     date: string
     image_url: string | null
     created_at: string
+    reward_amount?: number | null
+    currency?: string | null
     profiles?: {
       full_name?: string | null
       avatar_url?: string | null
@@ -152,6 +154,11 @@ export function ItemCard({ item }: ItemCardProps) {
           >
             {item.status === "lost" ? "Lost" : "Found"}
           </Badge>
+          {item.reward_amount && (
+            <Badge className="absolute top-3 right-3 shadow-md bg-yellow-500 hover:bg-yellow-600 text-white border-none">
+              Reward: {item.currency === 'BDT' ? '৳' : '$'}{item.reward_amount}
+            </Badge>
+          )}
         </div>
       </Link>
       <div className="flex-1 p-5">

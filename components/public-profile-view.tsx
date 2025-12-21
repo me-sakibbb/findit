@@ -16,6 +16,7 @@ import {
   Clock
 } from "lucide-react"
 import Link from "next/link"
+import { UserTrustBadge } from "@/components/user-trust-badge"
 
 interface PublicProfileViewProps {
   profile: {
@@ -30,6 +31,7 @@ interface PublicProfileViewProps {
     state?: string
     zip_code?: string
     preferred_contact?: string
+    trust_score?: number
   }
   currentUserId?: string
   items: any[]
@@ -91,6 +93,9 @@ export function PublicProfileView({ profile, currentUserId, items, stats, recent
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold">{profile.full_name}</h1>
+                {profile.trust_score !== undefined && (
+                  <UserTrustBadge score={profile.trust_score} size="md" />
+                )}
                 {stats.resolvedItems >= 5 && (
                   <Badge variant="secondary" className="gap-1">
                     <Award className="h-3 w-3" />

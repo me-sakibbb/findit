@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Calendar, MapPin, MessageSquare, Tag, Clock, Share2, Flag, ArrowLeft, ShieldCheck } from "lucide-react"
+import { Calendar, MapPin, MessageSquare, Tag, Clock, Share2, Flag, ArrowLeft, ShieldCheck, Printer, Download } from "lucide-react"
 import Link from "next/link"
 import { ItemDetailClient } from "./item-detail-client"
 import { ItemCard } from "@/components/item-card"
@@ -12,6 +12,7 @@ import { MapWrapper } from "@/components/map-wrapper"
 import { ItemComments } from "@/components/item-comments"
 import { Separator } from "@/components/ui/separator"
 import { PotentialMatches } from "@/components/potential-matches"
+import { UserTrustBadge } from "@/components/user-trust-badge"
 
 interface ItemDetailPageProps {
   params: Promise<{ id: string }>
@@ -31,7 +32,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
   // Fetch profile
   let profile = null
   if (item.user_id) {
-    const { data } = await supabase.from("profiles").select("full_name, avatar_url").eq("id", item.user_id).single()
+    const { data } = await supabase.from("profiles").select("full_name, avatar_url, trust_score").eq("id", item.user_id).single()
     profile = data
   }
 
@@ -105,6 +106,14 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
               <Clock className="h-4 w-4" />
               Posted {new Date(item.created_at).toLocaleDateString()}
             </span>
+            {item.reward_amount && (
+              <>
+                <span className="hidden md:inline">•</span>
+                <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white border-none text-sm px-3 py-1">
+                  Reward: {item.currency === 'BDT' ? '৳' : '$'}{item.reward_amount}
+                </Badge>
+              </>
+            )}
           </div>
         </div>
 
@@ -150,7 +159,12 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                 </Avatar>
                 <div>
                   <p className="font-semibold text-lg">Posted by {profile?.full_name || "FindIt User"}</p>
-                  <p className="text-sm text-muted-foreground">Member since {new Date(item.created_at).getFullYear()}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-sm text-muted-foreground">Member since {new Date(item.created_at).getFullYear()}</p>
+                    {profile?.trust_score !== undefined && (
+                      <UserTrustBadge score={profile.trust_score} size="sm" />
+                    )}
+                  </div>
                 </div>
               </div>
               {!isOwner && user && item.user_id && (
@@ -161,6 +175,12 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                   </Link>
                 </Button>
               )}
+              <Button variant="outline" asChild>
+                <Link href={`/items/${item.id}/print`} target="_blank">
+                  <Download className="mr-2 h-4 w-4" />
+                  Design Poster
+                </Link>
+              </Button>
             </div>
 
             {/* Description */}

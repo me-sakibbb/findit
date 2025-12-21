@@ -48,6 +48,8 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
     setTitle,
     description,
     setDescription,
+    rewardAmount,
+    setRewardAmount,
     selectedLocation,
     setSelectedLocation,
     date,
@@ -97,6 +99,27 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
               required
             />
           </div>
+
+          {type === "lost" && (
+            <div className="space-y-2">
+              <Label htmlFor="reward">Reward Amount (Optional)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">৳</span>
+                <Input
+                  id="reward"
+                  type="number"
+                  placeholder="e.g. 500"
+                  className="pl-8"
+                  value={rewardAmount}
+                  onChange={(e) => setRewardAmount(e.target.value)}
+                  min="0"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Offering a reward can incentivize others to help find your item.
+              </p>
+            </div>
+          )}
 
           {/* Category selection removed - automated by AI */}
 

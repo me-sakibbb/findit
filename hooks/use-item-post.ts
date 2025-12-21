@@ -14,6 +14,7 @@ export function useItemPost({ type }: UseItemPostProps) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   // Category is now automated
+  const [rewardAmount, setRewardAmount] = useState("")
   const [selectedLocation, setSelectedLocation] = useState<{ name: string; lat: number; lng: number } | null>(null)
   const [date, setDate] = useState("")
   const [images, setImages] = useState<string[]>([])
@@ -164,6 +165,7 @@ export function useItemPost({ type }: UseItemPostProps) {
           date,
           image_url: images[0] || null,
           is_active: true,
+          reward_amount: rewardAmount ? Number.parseFloat(rewardAmount) : null,
         })
         .select()
         .single()
@@ -213,6 +215,8 @@ export function useItemPost({ type }: UseItemPostProps) {
     setTitle,
     description,
     setDescription,
+    rewardAmount,
+    setRewardAmount,
     // category,
     // setCategory,
     selectedLocation,
