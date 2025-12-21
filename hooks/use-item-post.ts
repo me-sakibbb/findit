@@ -13,7 +13,7 @@ interface UseItemPostProps {
 export function useItemPost({ type }: UseItemPostProps) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("")
+  // Category is now automated
   const [selectedLocation, setSelectedLocation] = useState<{ name: string; lat: number; lng: number } | null>(null)
   const [date, setDate] = useState("")
   const [images, setImages] = useState<string[]>([])
@@ -24,32 +24,7 @@ export function useItemPost({ type }: UseItemPostProps) {
   const [generatingQuestions, setGeneratingQuestions] = useState(false)
   const router = useRouter()
 
-  const handleAutoCategorize = async () => {
-    if (!title || !description) {
-      toast.error("Missing information", { description: "Please provide both title and description first" })
-      return
-    }
-
-    setCategorizing(true)
-    try {
-      console.log("[Form] Calling AI categorization...")
-      const result = await categorizeItem(title, description)
-      console.log("[Form] AI result:", result)
-
-      if (result) {
-        setCategory(result.category)
-
-        toast.success("Category suggested!", { description: `AI suggests: ${result.category} (${Math.round(result.confidence * 100)}% confident)` })
-      } else {
-        toast.error("AI Suggest unavailable", { description: "Add GROQ_API_KEY to .env.local (free at console.groq.com)" })
-      }
-    } catch (error) {
-      console.error("[Form] AI Suggest Error:", error)
-      toast.error("Categorization failed", { description: "An error occurred. Check the console for details." })
-    } finally {
-      setCategorizing(false)
-    }
-  }
+  // Auto-categorize logic removed as it's now handled by Edge Function on submit
 
   const generateQuestions = async () => {
     if (!title || !description) {
@@ -62,7 +37,7 @@ export function useItemPost({ type }: UseItemPostProps) {
       const response = await fetch("/api/ai/generate-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, category }),
+        body: JSON.stringify({ title, description }),
       })
 
       if (!response.ok) throw new Error("Failed to generate questions")
@@ -182,7 +157,7 @@ export function useItemPost({ type }: UseItemPostProps) {
           status: type,
           title,
           description,
-          category,
+          category: "Uncategorized", // Will be updated by AI
           location: selectedLocation.name,
           latitude: selectedLocation.lat,
           longitude: selectedLocation.lng,
@@ -217,6 +192,11 @@ export function useItemPost({ type }: UseItemPostProps) {
         body: { item_id: newItem.id }
       })
 
+      // Trigger AI categorization (fire-and-forget)
+      void supabase.functions.invoke('suggest-category', {
+        body: { record: newItem }
+      })
+
       toast.success("Item posted!", { description: `Your ${type} item has been posted successfully.` })
 
       router.push("/profile")
@@ -233,8 +213,8 @@ export function useItemPost({ type }: UseItemPostProps) {
     setTitle,
     description,
     setDescription,
-    category,
-    setCategory,
+    // category,
+    // setCategory,
     selectedLocation,
     setSelectedLocation,
     date,
@@ -243,7 +223,7 @@ export function useItemPost({ type }: UseItemPostProps) {
     uploading,
     submitting,
     categorizing,
-    handleAutoCategorize,
+    // handleAutoCategorize,
     handleImageUpload,
     removeImage,
     handleSubmit,

@@ -48,8 +48,6 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
     setTitle,
     description,
     setDescription,
-    category,
-    setCategory,
     selectedLocation,
     setSelectedLocation,
     date,
@@ -58,7 +56,6 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
     uploading,
     submitting,
     categorizing,
-    handleAutoCategorize,
     handleImageUpload,
     removeImage,
     handleSubmit,
@@ -101,42 +98,7 @@ export function ItemPostForm({ type }: ItemPostFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="category">Category *</Label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleAutoCategorize}
-                disabled={categorizing || !title || !description}
-              >
-                {categorizing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Categorizing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    AI Suggest
-                  </>
-                )}
-              </Button>
-            </div>
-            <Select value={category} onValueChange={setCategory} required>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Category selection removed - automated by AI */}
 
           <div className="space-y-2">
             <Label htmlFor="location">Location *</Label>

@@ -109,9 +109,12 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
         </div>
 
         {/* Potential Matches - High Visibility */}
-        <div className="mb-8">
-          <PotentialMatches itemId={item.id} itemStatus={item.status} />
-        </div>
+        <PotentialMatches
+          itemId={item.id}
+          itemStatus={item.status}
+          currentUserId={user?.id}
+          itemOwnerId={item.user_id}
+        />
 
         {/* Hero Image */}
         <div className="relative aspect-video md:aspect-[21/9] w-full overflow-hidden rounded-2xl border bg-muted shadow-sm mb-10">

@@ -46,7 +46,22 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     query = query.eq("status", params.type)
   }
   if (params.category && params.category !== "all") {
-    query = query.eq("category", params.category)
+    // Since items.category stores the Name (e.g. "Electronics") but the URL param is the Slug (e.g. "electronics"),
+    // we need to find the category name from the slug first.
+    // Ideally, we should join tables, but for now let's fetch the category name.
+    const { data: categoryData } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("slug", params.category)
+      .single()
+
+    if (categoryData) {
+      query = query.eq("category", categoryData.name)
+    } else {
+      // Fallback: try to filter by the slug directly if it happens to match (unlikely but safe)
+      // or just filter by what was passed if it's not found (might return nothing, which is correct)
+      query = query.eq("category", params.category)
+    }
   }
   if (params.q) {
     query = query.or(`title.ilike.%${params.q}%,description.ilike.%${params.q}%`)

@@ -10,6 +10,8 @@ import dynamic from "next/dynamic"
 import { UserSearch } from "./user-search"
 import { DateRangePicker } from "./date-range-picker"
 import { useSearchFilters } from "@/hooks/use-search-filters"
+import { useEffect, useState } from "react"
+import { createBrowserClient } from "@/lib/supabase/client"
 
 // Dynamically import LeafletMapsPicker with no SSR to avoid "window is not defined" error
 const LeafletMapsPicker = dynamic(
@@ -25,18 +27,7 @@ const LeafletMapsPicker = dynamic(
   }
 )
 
-const CATEGORIES = [
-  "Electronics",
-  "Clothing",
-  "Accessories",
-  "Documents",
-  "Keys",
-  "Bags",
-  "Books",
-  "Jewelry",
-  "Sports Equipment",
-  "Other",
-]
+// CATEGORIES removed in favor of DB fetch
 
 export function SearchFilters({ savedOnly }: { savedOnly?: boolean }) {
   const {
@@ -57,6 +48,23 @@ export function SearchFilters({ savedOnly }: { savedOnly?: boolean }) {
     applyFilters,
     clearFilters
   } = useSearchFilters(savedOnly)
+
+  const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([])
+  const supabase = createBrowserClient()
+
+  useEffect(() => {
+    async function fetchCategories() {
+      const { data } = await supabase
+        .from('categories')
+        .select('id, name, slug')
+        .order('name')
+
+      if (data) {
+        setCategories(data)
+      }
+    }
+    fetchCategories()
+  }, [supabase])
 
   return (
     <Card className="sticky top-24 shadow-sm">
@@ -114,9 +122,9 @@ export function SearchFilters({ savedOnly }: { savedOnly?: boolean }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {CATEGORIES.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.slug}>
+                  {cat.name}
                 </SelectItem>
               ))}
             </SelectContent>

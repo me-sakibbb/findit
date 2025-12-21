@@ -3,15 +3,53 @@ import { SearchFilters } from "@/components/search-filters"
 import { ItemCard } from "@/components/item-card"
 import { Package } from "lucide-react"
 
-export default async function ItemsPage() {
+interface ItemsPageProps {
+  searchParams: Promise<{
+    type?: string
+    category?: string
+    q?: string
+    userId?: string
+  }>
+}
+
+export default async function ItemsPage({ searchParams }: ItemsPageProps) {
+  const params = await searchParams
   const supabase = await createServerClient()
 
-  const { data: items, error } = await supabase
+  let query = supabase
     .from("items")
     .select("*, profiles(id, full_name, avatar_url)")
     .eq("is_active", true)
     .order("created_at", { ascending: false })
     .limit(50)
+
+  if (params.type && params.type !== "all") {
+    query = query.eq("status", params.type)
+  }
+
+  if (params.category && params.category !== "all") {
+    const { data: categoryData } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("slug", params.category)
+      .single()
+
+    if (categoryData) {
+      query = query.eq("category", categoryData.name)
+    } else {
+      query = query.eq("category", params.category)
+    }
+  }
+
+  if (params.q) {
+    query = query.or(`title.ilike.%${params.q}%,description.ilike.%${params.q}%`)
+  }
+
+  if (params.userId) {
+    query = query.eq("user_id", params.userId)
+  }
+
+  const { data: items, error } = await query
 
   if (error) {
     console.error("[Items] Error fetching items:", error)

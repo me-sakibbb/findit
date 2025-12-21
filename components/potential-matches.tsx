@@ -13,14 +13,27 @@ import { cn } from "@/lib/utils"
 interface PotentialMatchesProps {
     itemId: string
     itemStatus: "lost" | "found"
+    currentUserId?: string | null
+    itemOwnerId: string
 }
 
-export function PotentialMatches({ itemId, itemStatus }: PotentialMatchesProps) {
-    const { matches, loading, dismissMatch } = usePotentialMatches({ itemId })
+export function PotentialMatches({ itemId, itemStatus, currentUserId, itemOwnerId }: PotentialMatchesProps) {
+    const { matches: allMatches, loading, dismissMatch } = usePotentialMatches({ itemId })
+
+    // Filter matches based on user ownership
+    // 1. If user is the owner of the main item, they see all matches
+    // 2. If user is NOT the owner, they only see matches where they own the matched item
+    const isOwner = currentUserId === itemOwnerId
+    const matches = isOwner
+        ? allMatches
+        : allMatches.filter(m => m.matched_item.user_id === currentUserId)
 
     if (loading) {
+        // Only show loading state to the owner
+        if (!isOwner) return null
+
         return (
-            <Card>
+            <Card className="mb-8">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />
@@ -39,8 +52,11 @@ export function PotentialMatches({ itemId, itemStatus }: PotentialMatchesProps) 
     }
 
     if (matches.length === 0) {
+        // If not the owner and no matches for this user, don't show anything
+        if (!isOwner) return null
+
         return (
-            <Card>
+            <Card className="mb-8">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />
@@ -49,7 +65,7 @@ export function PotentialMatches({ itemId, itemStatus }: PotentialMatchesProps) 
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground text-sm text-center py-6">
-                        No potential matches found yet. We'll notify you when we find items that might match yours!
+                        No potential matches found yet. We'll notify you when we find items that might match this one!
                     </p>
                 </CardContent>
             </Card>
@@ -59,11 +75,11 @@ export function PotentialMatches({ itemId, itemStatus }: PotentialMatchesProps) 
     const oppositeStatus = itemStatus === "lost" ? "found" : "lost"
 
     return (
-        <Card className="border-primary/20">
+        <Card className="border-primary/20 mb-8">
             <CardHeader className="bg-primary/5">
                 <CardTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-primary" />
-                    Potential Matches ({matches.length})
+                    {isOwner ? "Potential Matches" : "Potential Match for Your Item"} ({matches.length})
                 </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
