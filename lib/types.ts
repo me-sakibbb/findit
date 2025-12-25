@@ -19,6 +19,7 @@ export interface Profile {
     push: boolean
   } | null
   is_onboarded: boolean
+  role: "user" | "admin"
   created_at: string
   updated_at: string
 }
