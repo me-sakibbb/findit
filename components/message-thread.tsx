@@ -170,16 +170,28 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
 
           <div className="flex items-center gap-2">
             {isItemOwner && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-teal-600 border-teal-200 hover:bg-teal-50 hover:text-teal-700 gap-2"
-                onClick={handleViewClaim}
-                disabled={loadingClaim}
-              >
-                {loadingClaim ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-                View Claim
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-teal-600 border-teal-200 hover:bg-teal-50 hover:text-teal-700 gap-2"
+                  onClick={handleViewClaim}
+                  disabled={loadingClaim}
+                >
+                  {loadingClaim ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                  View Claim
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 gap-2"
+                  asChild
+                >
+                  <Link href={`/items/${item?.id}`}>
+                    Mark as {item?.type === "lost" ? "Found" : "Returned"}
+                  </Link>
+                </Button>
+              </>
             )}
 
             <DropdownMenu>

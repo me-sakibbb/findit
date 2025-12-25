@@ -33,6 +33,9 @@ export default function PosterEditorPage() {
         async function fetchItem() {
             console.log("[PosterEditor] Fetching item with ID:", id)
 
+            // Get current user
+            const { data: { user } } = await supabase.auth.getUser()
+
             const { data, error } = await supabase
                 .from("items")
                 .select("*, profiles(full_name, email)")
@@ -41,18 +44,26 @@ export default function PosterEditorPage() {
 
             console.log("[PosterEditor] Fetch result:", { data, error })
 
-            if (error) {
+            if (error || !data) {
                 console.error("[PosterEditor] Error fetching item:", error)
+                setLoading(false)
+                return
             }
 
-            if (data) {
-                setItem(data)
-                // Initialize state
-                setHeadline(data.status === 'lost' ? 'LOST ITEM' : 'FOUND ITEM')
-                setDescription(data.description || "")
-                setThemeColor(data.status === 'lost' ? 'red' : 'green')
-                setShowReward(!!data.reward_amount)
+            // Check ownership and status
+            if (data.user_id !== user?.id || data.status !== 'lost') {
+                console.error("[PosterEditor] Unauthorized access or invalid item status")
+                setItem(null)
+                setLoading(false)
+                return
             }
+
+            setItem(data)
+            // Initialize state
+            setHeadline('LOST ITEM')
+            setDescription(data.description || "")
+            setThemeColor('red')
+            setShowReward(!!data.reward_amount)
             setLoading(false)
         }
 

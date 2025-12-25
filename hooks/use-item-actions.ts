@@ -79,25 +79,10 @@ export function useItemActions({ item, viewerUserId }: UseItemActionsProps) {
         }
     }
 
-    const handleShare = async () => {
-        try {
-            const url = typeof window !== "undefined" ? window.location.href : ""
+    const [shareModalOpen, setShareModalOpen] = useState(false)
 
-            if (navigator.share) {
-                await navigator.share({
-                    title: item.title,
-                    text: `Check this ${item.status === "lost" ? "lost" : "found"} item on FindIt: ${item.title}`,
-                    url,
-                })
-                return
-            }
-
-            await navigator.clipboard.writeText(url)
-            toast.success("Link copied", { description: "Item link copied to clipboard." })
-        } catch (err) {
-            console.error("[ItemDetail] Share failed:", err)
-            toast.error("Could not share", { description: "Copy the link from the address bar." })
-        }
+    const handleShare = () => {
+        setShareModalOpen(true)
     }
 
     const submitReport = async () => {
@@ -189,6 +174,8 @@ export function useItemActions({ item, viewerUserId }: UseItemActionsProps) {
         saving,
         toggleSaved,
         handleShare,
+        shareModalOpen,
+        setShareModalOpen,
         reportOpen,
         setReportOpen,
         reportReason,

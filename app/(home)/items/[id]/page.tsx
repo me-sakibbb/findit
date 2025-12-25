@@ -59,6 +59,19 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
     claims = claimsData || []
   }
 
+  // Check if current user has already claimed this item
+  let userHasClaimed = false
+  if (user && !isOwner) {
+    const { data: existingClaim } = await supabase
+      .from("claims")
+      .select("id")
+      .eq("item_id", id)
+      .eq("claimant_id", user.id)
+      .maybeSingle()
+
+    userHasClaimed = !!existingClaim
+  }
+
   // Fetch similar items
   const { data: similarItems } = await supabase
     .from("items")
@@ -179,12 +192,14 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                   </Link>
                 </Button>
               )}
-              <Button variant="outline" asChild>
-                <Link href={`/items/${item.id}/print`} target="_blank">
-                  <Download className="mr-2 h-4 w-4" />
-                  Design Poster
-                </Link>
-              </Button>
+              {isOwner && item.status === "lost" && (
+                <Button variant="outline" asChild>
+                  <Link href={`/items/${item.id}/print`} target="_blank">
+                    <Download className="mr-2 h-4 w-4" />
+                    Design Poster
+                  </Link>
+                </Button>
+              )}
             </div>
 
             {/* Description */}
@@ -258,6 +273,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                     isOwner={isOwner}
                     questions={questions || []}
                     claims={claims}
+                    userHasClaimed={userHasClaimed}
                   />
                 </CardContent>
               </Card>

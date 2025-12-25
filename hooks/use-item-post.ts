@@ -76,6 +76,9 @@ export function useItemPost({ type }: UseItemPostProps) {
         return
       }
 
+      // Dynamic import of compression utility
+      const { compressImage, formatSizeReduction } = await import("@/lib/image-utils")
+
       for (const file of Array.from(files)) {
         // Validate file type
         if (!file.type.startsWith("image/")) {
@@ -83,20 +86,35 @@ export function useItemPost({ type }: UseItemPostProps) {
           continue
         }
 
-        // Validate file size (max 5MB)
-        const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+        // Validate file size (max 10MB before compression)
+        const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
         if (file.size > MAX_FILE_SIZE) {
-          toast.error("File too large", { description: `${file.name} exceeds 5MB limit` })
+          toast.error("File too large", { description: `${file.name} exceeds 10MB limit` })
           continue
         }
 
-        // Generate unique filename
-        const fileExt = file.name.split(".").pop()
+        // Compress image before upload
+        let fileToUpload: File = file
+        try {
+          const originalSize = file.size
+          fileToUpload = await compressImage(file)
+          const compressedSize = fileToUpload.size
+
+          if (compressedSize < originalSize) {
+            console.log(`[Upload] Compressed: ${formatSizeReduction(originalSize, compressedSize)}`)
+          }
+        } catch (compressError) {
+          console.warn("[Upload] Compression failed, uploading original:", compressError)
+          // Continue with original file if compression fails
+        }
+
+        // Generate unique filename (now with jpg extension since compressed)
+        const fileExt = fileToUpload.name.split(".").pop() || "jpg"
         const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
 
         // Upload to Supabase Storage
-        const { data, error } = await supabase.storage.from("item-images").upload(fileName, file, {
-          contentType: file.type,
+        const { data, error } = await supabase.storage.from("item-images").upload(fileName, fileToUpload, {
+          contentType: fileToUpload.type,
           upsert: false,
         })
 

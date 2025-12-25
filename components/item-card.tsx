@@ -45,12 +45,20 @@ export function ItemCard({ item }: ItemCardProps) {
   const [claimModalOpen, setClaimModalOpen] = useState(false)
   const [itemQuestions, setItemQuestions] = useState<any[]>([])
   const [loadingQuestions, setLoadingQuestions] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  // Check if current user is the owner
+  const isOwner = currentUserId === item.user_id
 
   const checkSaved = useCallback(async () => {
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser()
+
+      // Also store the current user ID
+      setCurrentUserId(user?.id || null)
+
       if (!user) {
         setSaved(false)
         return
@@ -181,16 +189,14 @@ export function ItemCard({ item }: ItemCardProps) {
                   <span>{saved ? "Remove Bookmark" : "Bookmark"}</span>
                 </button>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleClaimClick} disabled={loadingQuestions}>
-                {item.status === "lost" ? (
+              {!isOwner && (
+                <DropdownMenuItem onClick={handleClaimClick} disabled={loadingQuestions}>
                   <CheckCircle className="mr-2 h-4 w-4" />
-                ) : (
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                )}
-                <span>
-                  {loadingQuestions ? "Loading..." : (item.status === "lost" ? "Mark as Found" : "Claim Item")}
-                </span>
-              </DropdownMenuItem>
+                  <span>
+                    {loadingQuestions ? "Loading..." : (item.status === "lost" ? "I Found This" : "Claim Item")}
+                  </span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-red-500">
                 <Shield className="mr-2 h-4 w-4" />

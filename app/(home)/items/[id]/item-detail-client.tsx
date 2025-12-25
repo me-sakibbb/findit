@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ClaimModal } from "@/components/claim-modal"
 import { ClaimDetailsModal } from "@/components/claim-details-modal"
+import { ShareModal } from "@/components/share-modal"
+import { ResolveItemModal } from "@/components/resolve-item-modal"
 import { Bookmark, ExternalLink, MapPin, Share2, ShieldAlert, Sparkles, UserRoundSearch, CheckCircle2, RotateCcw, Trash2 } from "lucide-react"
 import {
   AlertDialog,
@@ -64,9 +66,10 @@ interface ItemDetailClientProps {
   isOwner: boolean
   questions: Question[]
   claims: Claim[]
+  userHasClaimed?: boolean
 }
 
-export function ItemDetailClient({ item, viewerUserId, isOwner, questions, claims }: ItemDetailClientProps) {
+export function ItemDetailClient({ item, viewerUserId, isOwner, questions, claims, userHasClaimed = false }: ItemDetailClientProps) {
   const [claimModalOpen, setClaimModalOpen] = useState(false)
   const [claimDetailsOpen, setClaimDetailsOpen] = useState(false)
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null)
@@ -77,6 +80,8 @@ export function ItemDetailClient({ item, viewerUserId, isOwner, questions, claim
     saving,
     toggleSaved,
     handleShare,
+    shareModalOpen,
+    setShareModalOpen,
     reportOpen,
     setReportOpen,
     reportReason,
@@ -143,14 +148,28 @@ export function ItemDetailClient({ item, viewerUserId, isOwner, questions, claim
 
         <div className="grid gap-3">
           {!isOwner && (
-            <Button
-              size="lg"
-              className="w-full font-semibold text-base shadow-sm h-12"
-              onClick={() => setClaimModalOpen(true)}
-              disabled={!viewerUserId || !item.user_id}
-            >
-              {item.status === "lost" ? "I Found This" : "Claim This Item"}
-            </Button>
+            <>
+              {userHasClaimed ? (
+                <div className="w-full p-4 rounded-lg bg-muted/50 border border-green-200 dark:border-green-900">
+                  <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="font-medium">Already Claimed</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    You have already submitted a claim for this item. Check your messages for updates.
+                  </p>
+                </div>
+              ) : (
+                <Button
+                  size="lg"
+                  className="w-full font-semibold text-base shadow-sm h-12"
+                  onClick={() => setClaimModalOpen(true)}
+                  disabled={!viewerUserId || !item.user_id}
+                >
+                  {item.status === "lost" ? "I Found This" : "Claim This Item"}
+                </Button>
+              )}
+            </>
           )}
 
           {isOwner && (
@@ -305,27 +324,39 @@ export function ItemDetailClient({ item, viewerUserId, isOwner, questions, claim
         </div>
       </div>
 
-      <AlertDialog open={resolveDialogOpen} onOpenChange={setResolveDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {item.is_active !== false ? "Mark as Resolved?" : "Reactivate Item?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {item.is_active !== false
-                ? `This will mark the item as ${item.status === "lost" ? "found" : "returned"} and hide it from search results.`
-                : "This will make the item visible in search results again."
-              }
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={toggleItemStatus} disabled={updatingStatus}>
-              {updatingStatus ? "Updating..." : "Confirm"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Use enhanced modal for marking as resolved, simple dialog for reactivating */}
+      {item.is_active !== false ? (
+        <ResolveItemModal
+          open={resolveDialogOpen}
+          onOpenChange={setResolveDialogOpen}
+          item={{ id: item.id, title: item.title, status: item.status }}
+          claims={claims.map(c => ({
+            ...c,
+            claimant_id: (c as any).claimant_id,
+            claimant: c.claimant ? {
+              ...c.claimant,
+              avatar_url: (c.claimant as any).avatar_url
+            } : null
+          }))}
+        />
+      ) : (
+        <AlertDialog open={resolveDialogOpen} onOpenChange={setResolveDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reactivate Item?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will make the item visible in search results again.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={toggleItemStatus} disabled={updatingStatus}>
+                {updatingStatus ? "Updating..." : "Confirm"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
@@ -391,6 +422,13 @@ export function ItemDetailClient({ item, viewerUserId, isOwner, questions, claim
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ShareModal
+        open={shareModalOpen}
+        onOpenChange={setShareModalOpen}
+        item={{ id: item.id, title: item.title, status: item.status }}
+      />
     </div>
   )
 }
+
