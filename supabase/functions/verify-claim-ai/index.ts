@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        const { claim_id, item_id, questions, answers } = await req.json()
+        const { claim_id, item_id, questions, answers, claim_photos, linked_lost_post_id } = await req.json()
 
         if (!claim_id || !item_id) {
             return new Response(
@@ -38,6 +38,17 @@ Deno.serve(async (req) => {
                 JSON.stringify({ error: 'Item not found' }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
             )
+        }
+
+        // Fetch linked lost post if provided
+        let linkedPost = null
+        if (linked_lost_post_id) {
+            const { data: post } = await supabase
+                .from("items")
+                .select("*")
+                .eq("id", linked_lost_post_id)
+                .single()
+            linkedPost = post
         }
 
         const groqApiKey = Deno.env.get('GROQ_API_KEY')
@@ -72,64 +83,90 @@ Deno.serve(async (req) => {
         // Build comprehensive prompt with full context
         const prompt = `You are an AI assistant helping to verify if a person claiming a lost/found item is the legitimate owner.
 
-## ITEM DETAILS
+## FOUND ITEM DETAILS (The item being claimed)
 - **Title**: ${item.title}
 - **Description**: ${item.description || "Not provided"}
 - **Category**: ${item.category || "Unknown"}
 - **Type**: ${item.type || "Unknown"} (lost or found)
 - **Location**: ${item.location || "Not specified"}
 - **Date Posted**: ${item.created_at ? new Date(item.created_at).toLocaleDateString() : "Unknown"}
+- **Image URL**: ${item.image_url || "None"}
 
-## VERIFICATION QUESTIONS AND ANSWERS
+## CLAIMANT'S EVIDENCE
+
+### 1. Linked Lost Post
+${linkedPost ? `
+- **Title**: ${linkedPost.title}
+- **Description**: ${linkedPost.description}
+- **Date Lost**: ${linkedPost.date}
+- **Location**: ${linkedPost.location}
+- **Match Score**: Compare this lost post with the found item above.
+` : "No linked lost post provided."}
+
+### 2. Evidence Photos
+- **Photos Provided**: ${claim_photos && claim_photos.length > 0 ? `${claim_photos.length} photos uploaded` : "No photos uploaded"}
+${claim_photos && claim_photos.length > 0 ? `(Note: You cannot see the photos directly. Treat their presence as a positive signal UNLESS the claimant mentions they are "downloaded from the internet", "stock photos", or similar. If they admit to using internet photos, DISREGARD the photos entirely.)` : ""}
+
+### 3. Verification Questions & Answers
 ${questionsToUse.map((q: any, index: number) => {
             const claimantAnswer = answers[q.id] || "No answer provided"
             const ownerAnswer = q.correct_answer || null
             return `
-### Question ${index + 1} (ID: ${q.id})
+#### Question ${index + 1} (ID: ${q.id})
 **Question**: ${q.question_text}
 **Claimant's Answer**: "${claimantAnswer}"
 ${ownerAnswer ? `**Owner's Expected Answer**: "${ownerAnswer}"` : "**Owner's Expected Answer**: Not provided (use item context to evaluate)"}`
         }).join("\n")}
 
 ## YOUR TASK
-Analyze each answer carefully:
+Perform a holistic analysis to determine if the claimant is the owner.
 
-1. **If the owner provided an expected answer**: Compare semantically (allow for phrasing differences, synonyms, abbreviations). 
-   - "Yes, front" and "Yes, front side" should be considered CORRECT.
-   - "Black" and "Dark black" should be considered CORRECT.
-   - Completely different answers should be INCORRECT.
+1.  **Analyze Questions**:
+    *   **"Very Close" is Correct**: If the answer is very close to the truth (e.g., "dark blue" vs "navy", "Tuesday" vs "Wednesday"), mark it as **"Correct"**.
+    *   **"Vague" is Partially Correct**: If the answer is vague but not wrong (e.g., "some time last week"), mark it as **"Partially Correct"**.
+    *   **Heuristic**: Ask yourself: *"If they were NOT the owner, would they know this detail?"* If the answer contains specific details that are hard to guess, give them full credit.
+    *   **"I Don't Know"**: Treat honest admission of ignorance as neutral. **Only** if the claimant answers "I don't know" to **MORE THAN 50%** of the questions should you treat this as a negative sign.
 
-2. **If no expected answer is provided**: Evaluate if the answer is plausible and consistent with the item description.
+2.  **Analyze Linked Post**: If provided, does the lost post describe the same item? (Look for matching description, location, time).
 
-3. **Calculate an overall confidence percentage** (0-100) based on:
-   - How many questions were answered correctly
-   - The specificity and accuracy of the answers
-   - Whether answers demonstrate genuine knowledge of the item
+3.  **Analyze Evidence**:
+    *   **Photos**: If photos are provided and NOT flagged as internet/stock photos, treat this as a strong positive signal.
+    *   **Linked Post**: A matching linked post is the strongest evidence.
 
 ## REQUIRED JSON OUTPUT FORMAT
 {
   "confidence_percentage": <number between 0-100>,
-  "analysis": "<Brief 1-2 sentence summary of your overall assessment>",
+  "analysis": "PRIMARY VERDICT: <2-sentence clear verdict>\n\nELABORATION: <Detailed elaboration incorporating insights from questions, linked post, and evidence.>",
   "question_analysis": {
     "<question_id>": {
       "status": "Correct" | "Partially Correct" | "Incorrect",
-      "score": <0-100 for this specific question>,
-      "explanation": "<Brief explanation of why this answer is correct/incorrect>"
+      "score": <0-100>,
+      "explanation": "<Brief explanation>"
     }
+  },
+  "linked_post_analysis": {
+    "status": "Strong Match" | "Possible Match" | "Weak Match" | "No Match" | "Not Provided",
+    "explanation": "<Specific data-driven analysis of how the linked post matches the found item.>"
+  },
+  "evidence_analysis": {
+    "status": "Strong" | "Moderate" | "Weak" | "None",
+    "explanation": "<Specific evaluation of the provided evidence (photos). If photos are present, analyze their authenticity and relevance.>"
   }
 }
 
-IMPORTANT: 
-- Use the exact question IDs provided above
-- Be fair but thorough in your analysis
-- "Partially Correct" means the answer has some relevant information but is incomplete or slightly off
-- Return ONLY valid JSON, no additional text`
+IMPORTANT:
+- **Primary Verdict**: The first two lines of "analysis" MUST be a clear, high-level verdict.
+- **Elaboration**: Use the rest of the "analysis" to explain the reasoning in detail.
+- **Prioritize Leniency**: Err on the side of believing the claimant unless there is clear evidence of fraud.
+- If a linked post is a strong match, significantly boost the confidence score.
+- **CRITICAL**: If the claimant mentions photos are from the internet, ignore the photos and lower confidence if that was their main evidence.
+- Return ONLY valid JSON.`
 
         const completion = await groq.chat.completions.create({
             messages: [
                 {
                     role: "system",
-                    content: "You are an expert at analyzing claim verifications for lost/found items. You return accurate, fair assessments in valid JSON format. Be lenient with phrasing differences but strict about factual accuracy."
+                    content: "You are an expert at analyzing claim verifications for lost/found items. You return accurate, fair assessments in valid JSON format. You understand human memory is imperfect and are forgiving of minor details, but strict on factual contradictions."
                 },
                 {
                     role: "user",
@@ -161,12 +198,19 @@ IMPORTANT:
         }
 
         // Update the claim with AI analysis results
+        // We store the extra analysis in the ai_question_analysis JSONB column
+        const fullAnalysis = {
+            ...(data.question_analysis || {}),
+            linked_post_analysis: data.linked_post_analysis,
+            evidence_analysis: data.evidence_analysis
+        }
+
         const { error: updateError } = await supabase
             .from('claims')
             .update({
                 ai_verdict: data.confidence_percentage.toString(),
                 ai_analysis: data.analysis || 'No analysis provided',
-                ai_question_analysis: data.question_analysis || {}
+                ai_question_analysis: fullAnalysis
             })
             .eq('id', claim_id)
 

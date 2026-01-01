@@ -12,6 +12,7 @@ import { MapWrapper } from "@/components/map-wrapper"
 import { ItemComments } from "@/components/item-comments"
 import { Separator } from "@/components/ui/separator"
 import { PotentialMatches } from "@/components/potential-matches"
+import { ResolutionDetails } from "@/components/resolution-details"
 import { UserTrustBadge } from "@/components/user-trust-badge"
 
 interface ItemDetailPageProps {
@@ -53,7 +54,7 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
   if (isOwner) {
     const { data: claimsData } = await supabase
       .from("claims")
-      .select("*, claimant:profiles(full_name, email)")
+      .select("*, claimant:profiles(full_name, avatar_url, email), linked_lost_post:items!linked_lost_post_id(*)")
       .eq("item_id", id)
       .order("created_at", { ascending: false })
     claims = claimsData || []
@@ -70,6 +71,28 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
       .maybeSingle()
 
     userHasClaimed = !!existingClaim
+  }
+
+  // Fetch resolution details if applicable
+  let resolvedByClaim = null
+  let linkedItem = null
+
+  if (item.resolved_by_claim_id) {
+    const { data } = await supabase
+      .from("claims")
+      .select("*, claimant:profiles(*)")
+      .eq("id", item.resolved_by_claim_id)
+      .single()
+    resolvedByClaim = data
+  }
+
+  if (item.linked_item_id) {
+    const { data } = await supabase
+      .from("items")
+      .select("id, title")
+      .eq("id", item.linked_item_id)
+      .single()
+    linkedItem = data
   }
 
   // Fetch similar items
@@ -130,13 +153,24 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
           </div>
         </div>
 
-        {/* Potential Matches - High Visibility */}
-        <PotentialMatches
-          itemId={item.id}
-          itemStatus={item.status}
-          currentUserId={user?.id}
-          itemOwnerId={item.user_id}
-        />
+        {/* Resolution Details or Potential Matches */}
+        {(item.resolution_status === 'pending' || item.resolution_status === 'confirmed') ? (
+          <div className="mb-10">
+            <ResolutionDetails
+              item={item}
+              resolvedByClaim={resolvedByClaim}
+              linkedItem={linkedItem}
+              currentUserId={user?.id || null}
+            />
+          </div>
+        ) : (
+          <PotentialMatches
+            itemId={item.id}
+            itemStatus={item.status}
+            currentUserId={user?.id}
+            itemOwnerId={item.user_id}
+          />
+        )}
 
         {/* Hero Image */}
         <div className="relative aspect-video md:aspect-[21/9] w-full overflow-hidden rounded-2xl border bg-muted shadow-sm mb-10">
@@ -261,8 +295,17 @@ export default async function ItemDetailPage({ params }: ItemDetailPageProps) {
                 <CardHeader className="bg-muted/30 py-3">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-lg">Actions</CardTitle>
-                    <Badge variant={item.is_active === false ? "outline" : "secondary"} className={item.is_active === false ? "border-amber-500 text-amber-600" : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"}>
-                      {item.is_active === false ? "Resolved" : "Active"}
+                    <Badge
+                      variant={item.is_active === false ? "outline" : "secondary"}
+                      className={
+                        item.is_active === false
+                          ? (item.resolution_status === 'pending' ? "border-yellow-500 text-yellow-600 bg-yellow-50" : "border-green-500 text-green-600 bg-green-50")
+                          : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      }
+                    >
+                      {item.is_active === false
+                        ? (item.resolution_status === 'pending' ? "Pending" : "Resolved")
+                        : "Active"}
                     </Badge>
                   </div>
                 </CardHeader>

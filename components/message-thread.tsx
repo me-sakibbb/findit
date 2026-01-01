@@ -55,7 +55,7 @@ export function MessageThread({ userId, threadId, itemId, recipientId }: Message
       // Fetch claim (get latest if multiple)
       const { data: claim, error } = await supabase
         .from("claims")
-        .select("*, claimant:profiles!claimant_id(full_name, email)")
+        .select("*, claimant:profiles!claimant_id(full_name, email), linked_lost_post:items!linked_lost_post_id(id, title, image_url, date, location, status)")
         .eq("item_id", item.id)
         .eq("claimant_id", recipient.id)
         .order("created_at", { ascending: false })

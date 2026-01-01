@@ -125,9 +125,20 @@ export function useItemActions({ item, viewerUserId }: UseItemActionsProps) {
         setUpdatingStatus(true)
         try {
             const newStatus = item.is_active === false ? true : false
+
+            const updateData: any = { is_active: newStatus }
+
+            // If reactivating, clear resolution data
+            if (newStatus === true) {
+                updateData.resolution_status = null
+                updateData.resolved_at = null
+                updateData.resolved_by_claim_id = null
+                updateData.linked_item_id = null
+            }
+
             const { error } = await supabase
                 .from("items")
-                .update({ is_active: newStatus })
+                .update(updateData)
                 .eq("id", item.id)
 
             if (error) throw error
@@ -168,6 +179,32 @@ export function useItemActions({ item, viewerUserId }: UseItemActionsProps) {
         }
     }
 
+    const confirmResolution = async () => {
+        setUpdatingStatus(true)
+        try {
+            const { error } = await supabase
+                .from("items")
+                .update({
+                    resolution_status: 'confirmed',
+                    resolved_at: new Date().toISOString()
+                })
+                .eq("id", item.id)
+
+            if (error) throw error
+
+            toast.success("Confirmed!", {
+                description: "Item marked as fully resolved."
+            })
+
+            router.refresh()
+        } catch (err: any) {
+            console.error("[ItemDetail] Confirmation failed:", err)
+            toast.error("Confirmation failed", { description: err?.message || "Could not confirm resolution." })
+        } finally {
+            setUpdatingStatus(false)
+        }
+    }
+
     return {
         saved,
         checkingSaved,
@@ -188,6 +225,7 @@ export function useItemActions({ item, viewerUserId }: UseItemActionsProps) {
         setDeleteDialogOpen,
         updatingStatus,
         toggleItemStatus,
+        confirmResolution,
         deleting,
         deleteItem
     }

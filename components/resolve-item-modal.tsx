@@ -7,12 +7,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
-import { Input } from "@/components/ui/input"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { Loader2, CheckCircle2, UserCheck, Link2, Search } from "lucide-react"
+import { Loader2, CheckCircle2, UserCheck } from "lucide-react"
 import Link from "next/link"
 
 interface Claim {
@@ -20,6 +18,7 @@ interface Claim {
     claimant_id?: string
     ai_verdict: string
     created_at: string
+    linked_lost_post_id?: string
     claimant?: {
         full_name: string | null
         email: string | null
@@ -40,54 +39,34 @@ interface ResolveItemModalProps {
 
 export function ResolveItemModal({ open, onOpenChange, item, claims }: ResolveItemModalProps) {
     const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null)
-    const [linkedItemId, setLinkedItemId] = useState("")
     const [resolving, setResolving] = useState(false)
-    const [searchingItem, setSearchingItem] = useState(false)
-    const [linkedItemTitle, setLinkedItemTitle] = useState<string | null>(null)
     const router = useRouter()
-
-    const handleSearchLinkedItem = async () => {
-        if (!linkedItemId.trim()) return
-
-        setSearchingItem(true)
-        try {
-            const supabase = createBrowserClient()
-            const { data } = await supabase
-                .from("items")
-                .select("id, title")
-                .eq("id", linkedItemId.trim())
-                .single()
-
-            if (data) {
-                setLinkedItemTitle(data.title)
-            } else {
-                setLinkedItemTitle(null)
-                toast.error("Item not found", { description: "No item found with that ID." })
-            }
-        } catch {
-            setLinkedItemTitle(null)
-        } finally {
-            setSearchingItem(false)
-        }
-    }
 
     const handleResolve = async () => {
         setResolving(true)
         try {
             const supabase = createBrowserClient()
 
-            // Update item as resolved
+            // Prepare update data
             const updateData: any = {
                 is_active: false,
-                resolved_at: new Date().toISOString()
+                resolution_initiated_at: new Date().toISOString()
             }
 
             if (selectedClaimId) {
+                // If a claimant is selected, it's pending confirmation
+                updateData.resolution_status = 'pending'
                 updateData.resolved_by_claim_id = selectedClaimId
-            }
 
-            if (linkedItemId.trim()) {
-                updateData.linked_item_id = linkedItemId.trim()
+                // Auto-link if the claim has a linked post
+                const selectedClaim = claims.find(c => c.id === selectedClaimId)
+                if (selectedClaim?.linked_lost_post_id) {
+                    updateData.linked_item_id = selectedClaim.linked_lost_post_id
+                }
+            } else {
+                // If no claimant (e.g. found by self/other means), it's confirmed immediately
+                updateData.resolution_status = 'confirmed'
+                updateData.resolved_at = new Date().toISOString()
             }
 
             const { error: itemError } = await supabase
@@ -113,7 +92,9 @@ export function ResolveItemModal({ open, onOpenChange, item, claims }: ResolveIt
             }
 
             toast.success("Item resolved!", {
-                description: `Marked as ${item.status === "lost" ? "found" : "returned"} successfully.`
+                description: selectedClaimId
+                    ? `Marked as pending. Waiting for confirmation from the recipient.`
+                    : `Marked as ${item.status === "lost" ? "found" : "returned"} successfully.`
             })
 
             onOpenChange(false)
@@ -239,46 +220,6 @@ export function ResolveItemModal({ open, onOpenChange, item, claims }: ResolveIt
                             </RadioGroup>
                         </div>
                     )}
-
-                    {/* Link to another item */}
-                    <div className="space-y-3">
-                        <Label className="text-sm font-medium flex items-center gap-2">
-                            <Link2 className="h-4 w-4" />
-                            Link to related post (optional)
-                        </Label>
-                        <div className="flex gap-2">
-                            <Input
-                                placeholder="Enter item ID to link..."
-                                value={linkedItemId}
-                                onChange={(e) => {
-                                    setLinkedItemId(e.target.value)
-                                    setLinkedItemTitle(null)
-                                }}
-                            />
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                onClick={handleSearchLinkedItem}
-                                disabled={searchingItem || !linkedItemId.trim()}
-                            >
-                                {searchingItem ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Search className="h-4 w-4" />
-                                )}
-                            </Button>
-                        </div>
-                        {linkedItemTitle && (
-                            <p className="text-sm text-green-600 flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4" />
-                                Found: {linkedItemTitle}
-                            </p>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                            Link this to a corresponding lost/found post if applicable.
-                        </p>
-                    </div>
                 </div>
 
                 <DialogFooter className="gap-2">

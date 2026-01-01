@@ -176,7 +176,7 @@ export function useItemPost({ type }: UseItemPostProps) {
           status: type,
           title,
           description,
-          category: "Uncategorized", // Will be updated by AI
+          category: "Other", // Will be updated by AI
           location: selectedLocation.name,
           latitude: selectedLocation.lat,
           longitude: selectedLocation.lng,

@@ -141,7 +141,7 @@ export function ClaimModal({ open, onOpenChange, item }: ClaimModalProps) {
                 const compressedFile = await compressImage(file)
 
                 const fileExt = compressedFile.name.split(".").pop() || "jpg"
-                const fileName = `claims/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+                const fileName = `${user.id}/claims/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
 
                 const { data, error } = await supabase.storage
                     .from("item-images")

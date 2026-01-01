@@ -39,7 +39,10 @@ type Claim = {
   claimant?: {
     full_name: string | null
     email: string | null
+    avatar_url?: string | null
   } | null
+  claim_photos?: string[] | null
+  linked_lost_post?: Item | null
 }
 
 type Item = {
@@ -58,6 +61,10 @@ type Item = {
   image_url: string | null
   ai_tags: string[] | null
   is_active: boolean | null
+  resolution_status?: string | null
+  resolution_initiated_at?: string | null
+  resolved_by_claim_id?: string | null
+  linked_item_id?: string | null
 }
 
 interface ItemDetailClientProps {
